@@ -1,0 +1,58 @@
+[C#윈폼145] (HttpListener#3/OPENAPI 스타일) 웹서버와 사물인터넷(IoT) 보드(ESP8266) 데이터베이스(MYSQL) 연동시리즈!(녹칸다/포로리야공대가자)
+
+(HttpListener#3/OPENAPI 스타일) 웹서버와 사물인터넷(IoT) 보드(ESP8266) 데이터베이스(MYSQL) 연동시리즈!
+-이번 시리즈는 C#윈폼과 사물인터넷보드(Wemos d1r1/ESP8266) 사이의 상호작용에 관련된 것이다!
+-때때로 IoT보드를 사용해보면 외부의 조력이 필요한 경우가 있다!
+-특정한 상황에서 의사결정을 지원해줄 모니터링 서버라던지 데이터를 저장해줄 DB가 필요할때가 있다!
+-C#윈폼에 HttpListener를 이용해서 웹서버를 작동시키고 사물인터넷보드를 지원해주는 API를 구현해보고자 한다!
+-이때 C#윈폼은 웹서버(WebServer)가 되는 것이고 사물인터넷보드는 웹클라이언트(WebClient)가 되는 것이다!
+-사물인터넷보드가 필요한 내용을 Request하면 C#윈폼은 결과를 Response해주는 API같은 형태인 것이다!
+-HttpListener시리즈는 다양한 개념이 연계되어야 하기 때문에 만만치 않을 것이다!
+-3편에서는 OPENAPI 스타일이라는 컨셉으로 예제를 구현해보자!
+-C#윈폼에서 돌고있는 웹서버에 DB가 세팅되어있고 아주 대량의 데이터가 존재한다고 가정한다!
+-이때 사물인터넷보드에서 필요한 정보를 요청해서 DB안에 있는 내용을 꺼내 온다는 컨셉이다!
+-1. C#윈폼에 적절한 DB(MYSQL)를 구축하고 사물인터넷보드에서 필요한 정보를 요청해보자!
+-2. 응답데이터를 XML형태로 전송하고 시리얼 모니터에 파싱(Parsing)해서 출력해보자!
+-3. 응답데이터를 JSON형태로 전송하고 시리얼 모니터에 파싱(Parsing)해서 출력해보자!
+-4. 응답데이터를 JSON으로 받은다음 LCD모듈(ILI9341)에 출력해보자! (기본 한글 출력은 한계가 있다)
+-5. 녹칸다의 과거 예제를 이용해서 응답받은 데이터를 한글로 LCD에 출력해보자!
+
+ 
+
+(C#프로젝트/업로드 용량문제로MYSQL,JSON관련 파일은 다시 설치해야함!)
+
+example145.zip
+2.44MB
+SQL기본구문(C#).txt
+0.00MB
+exmaple145_db.sql
+0.00MB
+(사물인터넷보드용 코드/LCD없는거)
+
+
+C#145-1.txt
+0.00MB
+(사물인터넷보드용 코드/LCD있는거)
+
+
+C#145-2.txt
+0.01MB
+ 
+
+ 
+
+관련라이브러리(Adafruit-GFX-Library)
+
+https://github.com/adafruit/Adafruit-GFX-Library
+
+관련라이브러리(Adafruit_ILI9341)
+
+https://github.com/adafruit/Adafruit_ILI9341
+
+관련라이브러리(arduinoJSON)
+
+https://arduinojson.org/?utm_source=meta&utm_medium=library.properties
+
+레퍼런스강의(ILI9341에서 한글+특수문자쓰기#227)
+
+https://bota.tistory.com/1471

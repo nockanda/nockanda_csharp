@@ -1,0 +1,166 @@
+/*
+ * 녹칸다의 웹클라이언트 샘플
+ */
+#include <ESP8266WiFi.h>
+#include <SoftwareSerial.h>
+#include <ArduinoJson.h>
+#include "SPI.h"
+#include "Adafruit_GFX.h"
+#include "Adafruit_ILI9341.h"
+
+#define TFT_DC D9
+#define TFT_CS D10
+
+Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+SoftwareSerial GM65(D3, D4); // RX, TX
+
+#ifndef STASSID
+#define STASSID "~~~~~" //와이파이 검색했을때 뜨는 이름
+#define STAPSK  "~~~~~" //패스워드
+#endif
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+const char* host = "192.168.0.5";
+const int httpsPort = 60000;
+
+
+WiFiClient client;
+void setup() {
+  Serial.begin(115200);
+  GM65.begin(9600);
+  tft.begin();
+  
+  Serial.println();
+  Serial.print("connecting to ");
+  Serial.println(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  
+  Serial.print("connecting to ");
+  Serial.println(host);
+
+  //와이파이공유기와 연결된 직후 IP번호를 출력한다
+  tft.setRotation(3); //0,1,2,3
+  tft.fillScreen(ILI9341_BLACK);
+  tft.setCursor(0, 0);
+  tft.setTextColor(ILI9341_RED);
+  tft.setTextSize(3);
+  tft.println(WiFi.localIP().toString());
+}
+
+void loop() {
+  if(GM65.available()){
+    //바코드 리더기에서 뭔가 아두이노쪽으로 전송된 값이 있다면~
+    String barcode = GM65.readStringUntil(0x0d); //0x0d == CR
+
+    Serial.println(barcode);
+
+
+    //클라이언트와 서버와 커넥트
+    if (!client.connect(host, httpsPort)) {
+      Serial.println("connection failed");
+      return;
+    }
+
+    String url = "/"+barcode;
+
+    //사물인터넷보드에서 RSS서버로 보내는 요청!
+    client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "Connection: close\r\n\r\n");
+
+    //서버로부터 응답이 있을때까지 대기하겠다..
+    //언제까지 기다려야하나요..?
+    //timeout!
+    unsigned long t = millis(); //생존시간
+    while(1){
+      if(client.available()) break;
+      if(millis() - t > 10000) break;
+    }
+
+
+    //응답이 날라오는 부분!
+    Serial.println("request sent");
+
+    while(client.available()){
+      String data = client.readStringUntil('\n'); //readline();
+      if(data.indexOf("{\"result\":") != -1){
+        //Serial.println(data);
+        StaticJsonDocument<300> doc;
+        DeserializationError error = deserializeJson(doc, data);
+        
+        String result = doc["result"]; // "OK"
+        String pname = doc["name"]; // "보드마커"
+        String price = doc["price"]; // "1200"
+        String dc = doc["dc"]; // "0"
+
+        if(result == "OK"){
+          //검색결과가 존재
+          Serial.print("결과");
+          Serial.print("\t");
+          Serial.print("상품명");
+          Serial.print("\t");
+          Serial.print("가격");
+          Serial.print("\t");
+          Serial.println("할인율");
+
+          Serial.print(result);
+          Serial.print("\t");
+          Serial.print(pname);
+          Serial.print("\t");
+          Serial.print(price);
+          Serial.print("\t");
+          Serial.println(dc);
+
+          //금액을 계산
+          int total_price = price.toInt();
+          float total_dc = dc.toFloat();
+
+          total_price = total_price - (total_price * total_dc);
+
+          Serial.print("할인 금액 = ");
+          Serial.println(total_price);
+          tft.fillScreen(ILI9341_BLACK);
+          tft.setCursor(0, 0);
+          tft.println("BARCODE");
+          tft.setTextColor(ILI9341_YELLOW);
+          tft.println(barcode);
+          tft.setTextColor(ILI9341_RED);
+          tft.println("PRICE=");
+          tft.setTextColor(ILI9341_YELLOW);
+          tft.println(price);
+          tft.setTextColor(ILI9341_RED);
+          tft.println("TOTAL PRICE");
+          tft.setTextColor(ILI9341_YELLOW);
+          tft.println(String(total_price));
+        }else{
+          //검색결과가 없음
+          Serial.println("검색결과 없음!");
+          tft.fillScreen(ILI9341_BLACK);
+          tft.setCursor(0, 0);
+          tft.println("NO RESULT!!");
+        }
+
+        
+      }
+    }
+    Serial.println("DONE");
+  }
+
+
+
+
+
+  
+}

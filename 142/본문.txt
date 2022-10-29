@@ -1,0 +1,47 @@
+[C#윈폼142] (OPENAPI)축산물품질평가원 API를 이용해서 계란 등급과 가격을 알아보자!(#17)(녹칸다/포로리야공대가자)
+
+(OPENAPI)축산물품질평가원 API를 이용해서 계란 등급과 가격을 알아보자!(#17)(녹칸다/포로리야공대가자)
+-녹칸다의 openapi C# 프로젝트이다!(녹칸다/포로리야공대가자)
+-이번편은 공공데이터포털 OPENAPI를 한번 해보도록 하자!
+-이번편은 내가 계란을 제대로 구입한건가? 라는 의문에서 출발하는 프로젝트이다!
+-축산물품질평가원에서 2개의 OPENAPI를 활용할 예정이다!
+-첫번째는 계란등급판정결과조회 서비스이다!
+-계란을 유통하기위해서는 등급판정을 받아야하고 이때 난각기호라는 것을 계란껍질에 표기해야한다!
+-계란을 유심히 살펴보면 뭔가 써져있는 것이 있을 것이다!
+-난각기호를 이용해서 계란의 이력을 추적할 수 있는 API인 것이다!
+-두번째는 가금산물 일일거래가격조회서비스이다!
+-조회하려는 날짜의 계란의 시세를 확인해볼 수 있는 서비스이다!
+-계란의 가격은 산지가격과 도매가격으로 출력되는 듯 하다!
+-내가 특란을 구입했는데 진짜 특란으로 판정을 받았는지와 구입한 가격이 적절한지를 종합적으로 알아 볼 수 있을 것 같다!
+-받아온 결과를 C#윈폼에 적절하게 출력해서 계란에 대해서 자세히 알아보는 시간을 가져보도록 하자!
+-시연을 위해서 계란을 1알 가져와야하는데 깜빡하지 않으려나 모르겠다..!
+
+ 
+
+example142.zip
+0.05MB
+ 
+
+(샘플Query/계란등급판정결과조회 서비스)
+
+http://data.ekape.or.kr/openapi-data/service/user/grade/gradeinfo/egg?serviceKey=서비스키&eggshellNo=난각기호
+
+ 
+
+(샘플Query/계란 일일가격조회)
+
+http://data.ekape.or.kr/openapi-data/service/user/grade/poultry/egg?serviceKey=서비스키&startYmd=20210506&endYmd=20210506&type=1
+
+ 
+
+공공데이터포털
+
+https://www.data.go.kr/
+
+축산물품질평가원_계란등급판정정보
+
+https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15059251
+
+축산물품질평가원_가금산물 일일거래가격정보
+
+https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15073985

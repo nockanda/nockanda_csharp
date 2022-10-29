@@ -1,0 +1,100 @@
+[C#윈폼143] (HttpListener#1/튜토리얼/아이디어 도출) 웹서버와 사물인터넷(IoT) 보드(ESP8266) 데이터베이스(MYSQL) 연동시리즈!(녹칸다/포로리야공대가자)
+
+(HttpListener#1/튜토리얼/아이디어 도출) 웹서버와 사물인터넷(IoT) 보드(ESP8266) 데이터베이스(MYSQL) 연동시리즈!
+-이번 시리즈는 C#윈폼과 사물인터넷보드(Wemos d1r1/ESP8266) 사이의 상호작용에 관련된 것이다!
+-때때로 IoT보드를 사용해보면 외부의 조력이 필요한 경우가 있다!
+-특정한 상황에서 의사결정을 지원해줄 모니터링 서버라던지 데이터를 저장해줄 DB가 필요할때가 있다!
+-C#윈폼에 HttpListener를 이용해서 웹서버를 작동시키고 사물인터넷보드를 지원해주는 API를 구현해보고자 한다!
+-이때 C#윈폼은 웹서버(WebServer)가 되는 것이고 사물인터넷보드는 웹클라이언트(WebClient)가 되는 것이다!
+-사물인터넷보드가 필요한 내용을 Request하면 C#윈폼은 결과를 Response해주는 API같은 형태인 것이다!
+-HttpListener시리즈는 다양한 개념이 연계되어야 하기 때문에 만만치 않을 것이다!
+-1편 튜토리얼편은 전반적인 아이디어 도출을 해보고자 한다!
+-일단 C#윈폼을 웹서버로 작동가능하도록 하고 향후 진행될 예제의 구현을 위해서 필요한 예시를 구현한다!
+-개념적으로 아래와 같은 예시를 구현할 예정이다!
+
+ 
+
+(C#에서 IP확인하는 방법)
+IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
+foreach (IPAddress ip in host.AddressList)
+{
+    if (ip.AddressFamily == AddressFamily.InterNetwork)
+    {
+       string myip  = ip.ToString();
+    }
+}
+
+
+-1. 웹서버가 심플하게 구동될 수 있는 기본 코드!
+
+(C#프로젝트)
+
+example143.zip
+0.04MB
+
+-2. 사물인터넷 보드에서 보낸 내용으로 C#윈폼의 뭔가 제어된다!
+
+(C#프로젝트)
+
+example143-2.zip
+0.04MB
+(사물인터넷보드 프로젝트)
+
+C#143-2.txt
+0.00MB
+
+-3. C#윈폼에 세팅해놓은 내용이 사물인터넷보드에 반영이 된다!
+
+(C#프로젝트)
+
+example143-3.zip
+0.04MB
+(사물인터넷보드 프로젝트)
+
+C#143-3.txt
+0.00MB
+
+-4. 보드가 여러개 일때 각각의 보드를 효과적으로 제어할 방안!
+-4. 스마트폰에서 웹서버에 접속했을때 대응방안!
+-4. 스마트폰과 디바이스 구분방안!
+
+(C#프로젝트)
+
+example143-4.zip
+0.04MB
+(사물인터넷보드 프로젝트)
+
+C#143-4-1.txt
+0.00MB
+C#143-4-2.txt
+0.00MB
+C#143-4-3.txt
+0.00MB
+
+-5. 사물인터넷보드에 데이터베이스(MYSQL) 연동 방안!
+
+(C#프로젝트)
+
+example143-5.zip
+0.06MB
+SQL기본구문(C#).txt
+0.00MB
+example143_db.sql
+0.01MB
+(사물인터넷보드 프로젝트)
+
+C#143-5.txt
+0.00MB
+(C# httplistener)
+
+https://docs.microsoft.com/ko-kr/dotnet/api/system.net.httplistener?view=net-5.0
+
+(C# thread)
+
+https://docs.microsoft.com/ko-kr/dotnet/api/system.threading.thread?view=net-5.0
+
+ 
+
+ESP8266개발환경세팅(#132)
+
+https://bota.tistory.com/1365

@@ -1,0 +1,84 @@
+/*
+ C#143-4-1용 코드
+ 온습도센서가 달려있다라고 가정!
+ */
+#include <ESP8266WiFi.h>
+
+#ifndef STASSID
+#define STASSID "~~~~~" //와이파이 검색했을때 뜨는 이름
+#define STAPSK  "~~~~~" //패스워드
+#endif
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+const char* host = "192.168.0.5";
+const int httpsPort = 60000;
+
+
+WiFiClient client;
+void setup() {
+  Serial.begin(115200);
+  Serial.println();
+  Serial.print("connecting to ");
+  Serial.println(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  
+  Serial.print("connecting to ");
+  Serial.println(host);
+
+
+}
+
+void loop() {
+    //클라이언트와 서버와 커넥트
+  if (!client.connect(host, httpsPort)) {
+    Serial.println("connection failed");
+    return;
+  }
+
+
+  //온도 범위 20.0~30.0
+  //습도 범위 40.0~60.0
+
+  float temp = random(200, 300) / 10;
+  float humi = random(400, 600) / 10;
+
+  String url = "/temp="+String(temp)+"/humi="+String(humi);
+
+  //사물인터넷보드에서 RSS서버로 보내는 요청!
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "User-Agent: device1\r\n" +
+               "Connection: close\r\n\r\n");
+
+  //서버로부터 응답이 있을때까지 대기하겠다..
+  //언제까지 기다려야하나요..?
+  //timeout!
+  unsigned long t = millis(); //생존시간
+  while(1){
+    if(client.available()) break;
+    if(millis() - t > 10000) break;
+  }
+
+
+  //응답이 날라오는 부분!
+  Serial.println("request sent");
+
+  while(client.available()){
+    String data = client.readStringUntil('\n'); //readline();
+    Serial.println(data);
+  }
+  Serial.println("DONE");
+  delay(5000);
+}

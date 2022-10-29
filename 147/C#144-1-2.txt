@@ -1,0 +1,86 @@
+/*
+  C#144-1-2 광센서용 코드
+ */
+#include <ESP8266WiFi.h>
+
+#ifndef STASSID
+#define STASSID "~~~~~" //와이파이 검색했을때 뜨는 이름
+#define STAPSK  "~~~~~" //패스워드
+#endif
+
+#define green D5
+#define red D6
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+const char* host = "192.168.0.5";
+const int httpsPort = 60000;
+
+
+WiFiClient client;
+void setup() {
+  Serial.begin(115200);
+  pinMode(green,OUTPUT);
+  pinMode(red,OUTPUT);
+  Serial.println();
+  Serial.print("connecting to ");
+  Serial.println(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  
+  Serial.print("connecting to ");
+  Serial.println(host);
+}
+
+void loop() {
+  //클라이언트와 서버와 커넥트
+  if (!client.connect(host, httpsPort)) {
+    Serial.println("connection failed");
+    digitalWrite(red,HIGH);
+    digitalWrite(green,LOW);
+    return;
+  }
+  digitalWrite(red,LOW);
+  digitalWrite(green,HIGH);
+
+  //광센서의 측정값을 읽는다!
+  int cds = analogRead(A0); //0~1023
+
+  String url = "/cds?value="+String(cds);
+
+  //사물인터넷보드에서 RSS서버로 보내는 요청!
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "User-Agent: nockanda\r\n" +
+               "Connection: close\r\n\r\n");
+
+  //서버로부터 응답이 있을때까지 대기하겠다..
+  //언제까지 기다려야하나요..?
+  //timeout!
+  unsigned long t = millis(); //생존시간
+  while(1){
+    if(client.available()) break;
+    if(millis() - t > 10000) break;
+  }
+
+
+  //응답이 날라오는 부분!
+  Serial.println("request sent");
+
+  while(client.available()){
+    String data = client.readStringUntil('\n'); //readline();
+    Serial.println(data);
+  }
+  Serial.println("DONE");
+  delay(5000);
+}

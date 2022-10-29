@@ -1,0 +1,202 @@
+/*
+ * 녹칸다의 웹클라이언트 샘플
+ */
+#include <ESP8266WiFi.h>
+#include <SoftwareSerial.h>
+#include <Servo.h>
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27,16,2); //1602
+SoftwareSerial GM65(D5,D6);
+Servo myservo1;
+Servo myservo2;
+
+#ifndef STASSID
+#define STASSID "~~~~~" //와이파이 검색했을때 뜨는 이름
+#define STAPSK  "~~~~~" //패스워드
+#endif
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+const char* host = "192.168.0.5";
+const int httpsPort = 60000;
+
+
+WiFiClient client;
+void setup() {
+  Serial.begin(115200);
+  GM65.begin(9600); //아두이노-바코드리더간 통신
+  myservo1.attach(D8); //일반쓰레기
+  myservo2.attach(D7); //재활용쓰레기
+  //초기각도는 0도
+  myservo1.write(0);
+  myservo2.write(0);
+  lcd.init();
+  lcd.backlight();
+  
+  Serial.println();
+  Serial.print("connecting to ");
+  Serial.println(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  
+  Serial.print("connecting to ");
+  Serial.println(host);
+
+  lcd.setCursor(0,0);
+  lcd.print("NOCK TRASH CAN!");
+  lcd.setCursor(0,1);
+  lcd.print(WiFi.localIP().toString());
+}
+
+void loop() {
+  if(GM65.available()){
+    //바코드 리더기가 뭔가 읽었다!
+    String barcode = GM65.readStringUntil(0x0d);
+
+    String data = request(barcode);
+    char c = data[10];
+    if(c == '0'){
+          //일반쓰레기
+          Serial.println("일반 쓰레기통 문을 열어라!");
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print(barcode);
+          lcd.setCursor(0,1);
+          lcd.print("NO RECYCLING!!");
+          
+          myservo1.write(90);
+          delay(3000);
+          myservo1.write(0);
+        }else if(c == '1'){
+          //재활용 쓰레기
+          Serial.println("재활용 쓰레기통 문을 열어라!");
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print(barcode);
+          lcd.setCursor(0,1);
+          lcd.print("RECYCLING!!");
+          
+          myservo2.write(90);
+          delay(3000);
+          myservo2.write(0);
+        }else if(c == '2'){
+          //검색결과 없음!
+          //사용자로부터 2차원바코드(QR코드)를 입력을 받는다!
+          //QR코드가 YES면 서버쪽으로 재활용쓰레기임을 알려주고
+          //QR코드가 NO면 서버쪽으로 일반쓰레기임을 알려준다!
+          Serial.println("재활용 쓰레기 입니까?");
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print(barcode);
+          lcd.setCursor(0,1);
+          lcd.print("RECYCLING??");
+          while(!GM65.available());
+          String user = GM65.readStringUntil(0x0d);
+          if(user == "YES"){
+            Serial.println("아하! 재활용 쓰레기 이군요!");
+            request2(barcode,"1");
+            lcd.clear();
+            lcd.setCursor(0,0);
+            lcd.print(barcode);
+            lcd.setCursor(0,1);
+            lcd.print("OK RECYCLING!!");
+          }else if(user == "NO"){
+            Serial.println("아하! 일반 쓰레기 이군요!");
+            request2(barcode,"0");
+            lcd.clear();
+            lcd.setCursor(0,0);
+            lcd.print(barcode);
+            lcd.setCursor(0,1);
+            lcd.print("OK NO RECYCLING!!");
+          }
+        }
+    
+  }
+}
+
+String request(String query){
+  //클라이언트와 서버와 커넥트
+  if (!client.connect(host, httpsPort)) {
+    Serial.println("connection failed");
+    return "";
+  }
+
+  String url = "/barcode="+query;
+
+  //사물인터넷보드에서 RSS서버로 보내는 요청!
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "Connection: close\r\n\r\n");
+
+  //서버로부터 응답이 있을때까지 대기하겠다..
+  //언제까지 기다려야하나요..?
+  //timeout!
+  unsigned long t = millis(); //생존시간
+  while(1){
+    if(client.available()) break;
+    if(millis() - t > 10000) break;
+  }
+
+
+  //응답이 날라오는 부분!
+  //Serial.println("request sent");
+  String output;
+  while(client.available()){
+    String data = client.readStringUntil('\n'); //readline();
+    if(data.indexOf("<response>") != -1){
+      output = data;
+    }
+  }
+  //Serial.println("DONE");
+  return output;
+}
+
+String request2(String query1,String query2){
+  //클라이언트와 서버와 커넥트
+  if (!client.connect(host, httpsPort)) {
+    Serial.println("connection failed");
+    return "";
+  }
+
+  // 192.168.0.5:60000/barcode=(값)&type=(값)
+  String url = "/barcode="+query1 + "&type=" + query2;
+
+  //사물인터넷보드에서 RSS서버로 보내는 요청!
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "Connection: close\r\n\r\n");
+
+  //서버로부터 응답이 있을때까지 대기하겠다..
+  //언제까지 기다려야하나요..?
+  //timeout!
+  unsigned long t = millis(); //생존시간
+  while(1){
+    if(client.available()) break;
+    if(millis() - t > 10000) break;
+  }
+
+
+  //응답이 날라오는 부분!
+  //Serial.println("request sent");
+  String output;
+  while(client.available()){
+    String data = client.readStringUntil('\n'); //readline();
+    if(data.indexOf("<response>") != -1){
+      output = data;
+    }
+  }
+  //Serial.println("DONE");
+  return output;
+}

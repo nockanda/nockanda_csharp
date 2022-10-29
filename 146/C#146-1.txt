@@ -1,0 +1,148 @@
+/*
+ * 녹칸다의 웹클라이언트 샘플
+ */
+#include <ESP8266WiFi.h>
+#include <Adafruit_Fingerprint.h>
+#include <ArduinoJson.h>
+
+#define green D5
+#define yellow D6
+#define red D7
+#define buzzer D10
+
+#ifndef STASSID
+#define STASSID "~~~~~~" //와이파이 검색했을때 뜨는 이름
+#define STAPSK  "~~~~~~" //패스워드
+#endif
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+const char* host = "192.168.0.5";
+const int httpsPort = 60000;
+
+SoftwareSerial mySerial(D3, D4);
+Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
+
+WiFiClient client;
+void setup() {
+  Serial.begin(115200); //PC - 사물인터넷보드간 통신
+  finger.begin(57600); //사물인터넷보드 - 지문모듈간 통신
+
+  pinMode(green, OUTPUT);
+  pinMode(yellow, OUTPUT);
+  pinMode(red, OUTPUT);
+  
+  Serial.println();
+  Serial.print("connecting to ");
+  Serial.println(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  
+  Serial.print("connecting to ");
+  Serial.println(host);
+}
+
+void loop() {
+
+  //지문모듈로부터 지문번호를 읽어온다!
+  //지문번호를 request로 보낸다!
+  uint8_t p = finger.getImage();
+  if (p != FINGERPRINT_OK)  return;
+
+  p = finger.image2Tz();
+  if (p != FINGERPRINT_OK)  return;
+
+  p = finger.fingerFastSearch();
+  if (p != FINGERPRINT_OK)  return;
+  
+  
+
+  
+  //클라이언트와 서버와 커넥트
+  if (!client.connect(host, httpsPort)) {
+    Serial.println("connection failed");
+    return;
+  }
+  String url = "/finger="+String(finger.fingerID);
+
+  //사물인터넷보드에서 RSS서버로 보내는 요청!
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "Nockanda: subscribe!!\r\n" +
+               "Connection: close\r\n\r\n");
+
+  //서버로부터 응답이 있을때까지 대기하겠다..
+  //언제까지 기다려야하나요..?
+  //timeout!
+  unsigned long t = millis(); //생존시간
+  while(1){
+    if(client.available()) break;
+    if(millis() - t > 10000) break;
+  }
+
+
+  //응답이 날라오는 부분!
+  Serial.println("request sent");
+
+  while(client.available()){
+    String data = client.readStringUntil('\n'); //readline();
+
+    if(data.indexOf("{\"msg\":") != -1){
+      //JSON
+      StaticJsonDocument<96> doc;
+      deserializeJson(doc, data);
+
+      String msg = doc["msg"]; // "이미 출근 등록을 했습니다!"
+      String state = doc["state"]; // "2"
+      Serial.println(msg);
+
+      //LED를 전체를 한번 깜빡인다음
+      tone(buzzer,3136);
+      digitalWrite(green,LOW);
+      digitalWrite(yellow,LOW);
+      digitalWrite(red,LOW);
+      delay(10);
+      digitalWrite(green,HIGH);
+      digitalWrite(yellow,HIGH);
+      digitalWrite(red,HIGH);
+      delay(10);
+      digitalWrite(green,LOW);
+      digitalWrite(yellow,LOW);
+      digitalWrite(red,LOW);
+      delay(10);
+      noTone(buzzer);
+      
+      if(state == "0"){
+        digitalWrite(green,HIGH);
+        digitalWrite(yellow,LOW);
+        digitalWrite(red,LOW);
+        Serial.println("녹색 LED를 켠다");
+      }
+      else if(state == "1"){
+        digitalWrite(green,LOW);
+        digitalWrite(yellow,LOW);
+        digitalWrite(red,HIGH);
+        Serial.println("적색 LED를 켠다");
+      }
+      else if(state == "2"){
+        digitalWrite(green,LOW);
+        digitalWrite(yellow,HIGH);
+        digitalWrite(red,LOW);
+        Serial.println("황색 LED를 켠다");
+      }
+    }
+  }
+  Serial.println("DONE");
+  
+}
+

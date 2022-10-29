@@ -1,0 +1,92 @@
+/*
+ C#144-3-1 이산화탄소센서(MH-Z19B)용 코드
+ */
+#include <ESP8266WiFi.h>
+#include <SoftwareSerial.h>
+#include <MHZ19.h>
+
+SoftwareSerial ss(D3,D4); //RX, TX
+MHZ19 mhz(&ss);
+
+#ifndef STASSID
+#define STASSID "~~~~~" //와이파이 검색했을때 뜨는 이름
+#define STAPSK  "~~~~~" //패스워드
+#endif
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+const char* host = "192.168.0.5";
+const int httpsPort = 60000;
+
+
+WiFiClient client;
+void setup() {
+  Serial.begin(115200);
+  ss.begin(9600);
+  Serial.println();
+  Serial.print("connecting to ");
+  Serial.println(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  
+  Serial.print("connecting to ");
+  Serial.println(host);
+}
+
+void loop() {
+  //클라이언트와 서버와 커넥트
+  if (!client.connect(host, httpsPort)) {
+    Serial.println("connection failed");
+    return;
+  }
+
+  //이산화탄소 농도 측정
+  int co2 = 0;
+  MHZ19_RESULT response = mhz.retrieveData();
+  if (response == MHZ19_RESULT_OK)
+  {
+    co2 = mhz.getCO2();
+  }
+  else
+  {
+    co2 = -999;
+  }
+
+  String url = "/mhz19?co2="+String(co2);
+
+  //사물인터넷보드에서 RSS서버로 보내는 요청!
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "User-Agent: nockanda\r\n" +
+               "Connection: close\r\n\r\n");
+
+  //서버로부터 응답이 있을때까지 대기하겠다..
+  //언제까지 기다려야하나요..?
+  //timeout!
+  unsigned long t = millis(); //생존시간
+  while(1){
+    if(client.available()) break;
+    if(millis() - t > 10000) break;
+  }
+
+
+  //응답이 날라오는 부분!
+  Serial.println("request sent");
+
+  while(client.available()){
+    String data = client.readStringUntil('\n'); //readline();
+    Serial.println(data);
+  }
+  Serial.println("DONE");
+  delay(5000);
+}

@@ -1,0 +1,144 @@
+/*
+ * 녹칸다의 웹클라이언트 샘플
+ */
+#include <ESP8266WiFi.h>
+#include <ArduinoJson.h>
+
+#ifndef STASSID
+#define STASSID "~~~~~" //와이파이 검색했을때 뜨는 이름
+#define STAPSK  "~~~~~" //패스워드
+#endif
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+const char* host = "192.168.0.5";
+const int httpsPort = 60000;
+
+
+WiFiClient client;
+void setup() {
+  Serial.begin(115200);
+  Serial.println();
+  Serial.print("connecting to ");
+  Serial.println(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  
+  Serial.print("connecting to ");
+  Serial.println(host);
+}
+
+void loop() {
+
+  if(Serial.available()){
+    //시리얼모니터에서 입력된값이 존재한다면~
+    String url = Serial.readStringUntil(0x0d); //CR
+
+    if(int pos = url.indexOf("/student?depart=") != -1){
+      pos += 15;
+      String path = url.substring(0,16);
+      String hangul = url.substring(pos,url.length());
+      url = path + nockanda(hangul);
+    }else if(int pos =url.indexOf("/student?gender=") != -1){
+      pos += 15;
+      String path = url.substring(0,16);
+      String hangul = url.substring(pos,url.length());
+      url = path + nockanda(hangul);
+    }else if(int pos =url.indexOf("/student?name=") != -1){
+      pos += 13;
+      String path = url.substring(0,14);
+      String hangul = url.substring(pos,url.length());
+      url = path + nockanda(hangul);
+    }
+
+
+    //클라이언트와 서버와 커넥트
+  if (!client.connect(host, httpsPort)) {
+    Serial.println("connection failed");
+    return;
+  }
+
+  //사물인터넷보드에서 RSS서버로 보내는 요청!
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "Connection: close\r\n\r\n");
+
+  //서버로부터 응답이 있을때까지 대기하겠다..
+  //언제까지 기다려야하나요..?
+  //timeout!
+  unsigned long t = millis(); //생존시간
+  while(1){
+    if(client.available()) break;
+    if(millis() - t > 10000) break;
+  }
+
+
+  //응답이 날라오는 부분!
+  Serial.println("request sent");
+
+  while(client.available()){
+    String data = client.readStringUntil('\n'); //readline();
+
+    if(data.indexOf("NOCKANDA") != -1){
+      //NOCKANDA 패턴을 찾았다!
+      break;
+    }
+  }
+  String query;
+  while(client.available()){
+    query += (char)client.read();
+  }
+  StaticJsonDocument<3000> doc;
+
+  DeserializationError error = deserializeJson(doc, query);
+
+
+  for (JsonObject elem : doc["response"].as<JsonArray>()) {
+
+    String stu_num1 = elem["stu_num"]; // "201877123", "201988991", "202010011", "202110001"
+    String name1 = elem["name"]; // "서땡땡", "김땡땡", "박땡땡", "녹칸다"
+    String depart1 = elem["depart"]; // "컴공", "컴공", "컴공", "컴공"
+    String gender1 = elem["gender"]; // "여", "남", "남", "남"
+    String level1 = elem["level"]; // "4", "3", "2", "1"
+    String date1 = elem["date"]; // "2018", "2019", "2020", "2021"
+
+    Serial.print(stu_num1);
+    Serial.print("\t");
+    Serial.print(name1);
+    Serial.print("\t");
+    Serial.print(depart1);
+    Serial.print("\t");
+    Serial.print(gender1);
+    Serial.print("\t");
+    Serial.print(level1);
+    Serial.print("\t");
+    Serial.println(date1);
+  }
+  Serial.println("DONE");
+
+    
+  }
+}
+
+String nockanda(String input){
+  //input : 컴공
+  //input[0] : 컴  input[1] : 공
+
+  String output = "";
+  for(int i = 0;i<input.length();i++){
+    //6바퀴
+    output += "%"+ String(input[i],HEX);
+  }
+
+  return output;
+}
