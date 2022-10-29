@@ -1,0 +1,42 @@
+//1부터 100까지 출력해보기(for loop)
+            for(int i = 1; i <= 100; i++)
+            {
+                Console.WriteLine("{0}", i);
+            }
+
+            //1부터 100까지 홀수만 출력해보기
+            for(int i = 1; i <= 100; i++)
+            {
+                if(i%2 == 1)
+               {
+            //홀수
+                    Console.WriteLine("{0}", i);
+               }
+            }
+
+            //1부터 100까지 합을 구해보기
+            int sum = 0;
+            for (int i = 1; i <= 100; i++)
+            {
+                sum += i; // sum = sum + i
+
+            }
+            Console.WriteLine("{0}", sum);
+
+            //구구단(2단만)출력 콘솔프로그램 만들어보기
+            for(int i = 1; i <= 9; i++)
+            {
+                Console.WriteLine("2 * {0} = {1}", i, 2 * i);
+            }
+
+            //구구단(2~9단)출력 콘솔프로그램 만들어보기
+            for (int j = 2; j <= 9; j++)
+            {
+                Console.WriteLine("{0}단 시작합니다!", j);
+
+                for (int i = 1; i <= 9; i++)
+                {
+                    Console.WriteLine("{0} * {1} = {2}", j, i, j * i);
+                }
+                Console.WriteLine("");
+            }

@@ -1,0 +1,42 @@
+/*
+ * C#21-4 LED를 아래와 같이 작동시키시오
+ * 윈폼에서 ON이라고 보내면 켜기
+ * 윈폼에서 OFF라고 보내면 끄기
+ * LED 1개는 디지털2번 포트에 연결되어있음..
+ * (+) 택트스위치(버튼)을 D3에 연결했다.
+ * 버튼을 누르면 윈폼에 있는 픽쳐박스에 컬러를 아래와 같이 제어하라
+ * 버튼을 누르면 RED라고 윈폼으로 송신하고
+ * 버튼을 안누르면 CONTROL이라고 윈폼으로 송신한다.
+ * 윈폼은 RED 혹은 CONTROL을 받아서 픽쳐박스 컬러를 바꾼다.
+ */
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(2,OUTPUT); //출력모드
+  pinMode(3,INPUT_PULLUP); //버튼
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //수신버퍼에 뭔가 있으면 여기서 뭘 하겠다.
+    String recv = Serial.readStringUntil('\n');
+    if(recv == "ON"){
+      digitalWrite(2,HIGH); //LED켜기
+    }else if(recv == "OFF"){
+      digitalWrite(2,LOW); //LED끄기
+    }else{
+      //아무것도 안함
+    }
+  }
+  //(아래)좋은 스타일은 아님 다른 강의로 수정예정
+  if(digitalRead(3) == LOW){
+    //버튼이 눌려진상태
+    Serial.println("RED");
+  }else{
+    //버튼이 안눌려진상태
+    Serial.println("CONTROL");
+  }
+  delay(100);
+}

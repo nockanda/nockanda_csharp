@@ -1,0 +1,19 @@
+/*
+ * C#21-2 윈폼에서 보낸 메시지에다가 "[arduino]"
+ * 머릿말을 붙혀서 다시 돌려보내는 프로그램!
+ */
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //수신버퍼에 뭔가 있으면 여기서 뭘 하겠다.
+    String recv = Serial.readStringUntil('\n');
+    recv = "[arduino] " + recv;
+    Serial.println(recv);
+  }
+}

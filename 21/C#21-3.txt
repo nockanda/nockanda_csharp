@@ -1,0 +1,27 @@
+/*
+ * C#21-3 LED를 아래와 같이 작동시키시오
+ * 윈폼에서 ON이라고 보내면 켜기
+ * 윈폼에서 OFF라고 보내면 끄기
+ * LED 1개는 디지털2번 포트에 연결되어있음..
+ */
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(2,OUTPUT); //출력모드
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //수신버퍼에 뭔가 있으면 여기서 뭘 하겠다.
+    String recv = Serial.readStringUntil('\n');
+    if(recv == "ON"){
+      digitalWrite(2,HIGH); //LED켜기
+    }else if(recv == "OFF"){
+      digitalWrite(2,LOW); //LED끄기
+    }else{
+      //아무것도 안함
+    }
+  }
+}

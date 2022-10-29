@@ -1,0 +1,39 @@
+/*
+ * C#23-3 버튼을 디지털2에서부터 디지털9번핀까지 연결했다.
+ * 버튼을 눌렀는지 안눌렀는지 윈폼에서 확인하라
+ * (시리얼통신으로)
+ * 8바이트패킷을 1바이트로 줄여보자!
+ * (버튼이 8개이므로...)
+ */
+
+int d_pin[8] = {2,3,4,5,6,7,8,9};
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  for(int i = 0;i<8;i++){
+    pinMode(d_pin[i], INPUT_PULLUP);
+  }
+}
+byte data;
+void loop() {
+  // put your main code here, to run repeatedly:
+  /*
+  if(Serial.available() > 0){
+    //만약에 컴퓨터쪽에서 날라오는 값이 있다면~
+    Serial.readBytes(data, 2);
+    Serial.write(data[0]);
+    Serial.write(data[1]);
+  }
+  */
+  data = 255; //초기화(전부1인상태)
+                   //1111 1111
+                   //0000 0001
+  for(int i = 0;i<8;i++){
+    if(digitalRead(d_pin[i]) == 0){
+      data = data ^ (1<<i); //x
+    }
+  }
+  Serial.write(data);
+  delay(100);   
+}

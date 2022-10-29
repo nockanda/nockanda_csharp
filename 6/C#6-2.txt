@@ -1,0 +1,14 @@
+static void Main(string[] args)
+        {
+            //예제2)멘트를 출력할 횟수를 함수에
+            //보내주면 반복해서 출력하도록 하라!
+            ment(50);
+        }
+
+        static void ment(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                Console.WriteLine("특정 멘트");
+            }
+        }

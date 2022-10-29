@@ -1,0 +1,22 @@
+//예제2)파일에 저장된 애국가의
+            //특정단어를 다른 것으로 바꾸어서 저장하라!
+            //2-1무궁화를 장미로 바꿔라
+            //2-2무궁화를 장미로 바꿔서 애국가2.txt로 저장하라!
+
+            string read_path = @"./애국가.txt";
+            string write_path = @"./애국가2.txt";
+            FileStream read_fs = new FileStream(read_path, FileMode.OpenOrCreate);
+            FileStream write_fs = new FileStream(write_path, FileMode.OpenOrCreate);
+            //read
+            StreamReader sr = new StreamReader(read_fs, Encoding.UTF8);
+            StreamWriter sw = new StreamWriter(write_fs, Encoding.UTF8);
+
+            while (!sr.EndOfStream)
+            {
+                sw.WriteLine(sr.ReadLine().Replace("무궁화", "장미"));
+            }
+
+            sw.Close(); sw.Dispose();
+            sr.Close(); sr.Dispose();
+            read_fs.Close(); read_fs.Dispose();
+            write_fs.Close(); write_fs.Dispose();

@@ -1,0 +1,21 @@
+//예제5)한 학급에 학생이 30명이라고 할때 
+            //각 학생의 키를 170~190사이로 랜덤으로 초기화해서 출력하라!
+            //예제6)한학급의 키를 정렬해서 출력하고 합과 평균을 구하라!
+            int[] student = new int[30];
+            Random rnd = new Random();
+
+            for(int i = 0; i < student.Length; i++)
+            {
+                student[i] = rnd.Next(170, 191);
+                Console.WriteLine("{0}", student[i]);
+            }
+            Console.WriteLine();
+            Console.WriteLine();
+            int sum = 0;
+            Array.Sort(student);
+            for (int i = 0; i < student.Length; i++)
+            {
+                sum += student[i];
+                Console.WriteLine("{0}", student[i]);
+            }
+            Console.WriteLine("합은 {0}이고, 평균은 {1}이다!", sum, (double)sum / student.Length);

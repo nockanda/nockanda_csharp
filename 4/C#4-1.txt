@@ -1,0 +1,18 @@
+//예제4-1)랜덤한 정수 10개를 배열에 담아서 출력하는 프로그램을 만들어보라!
+            //단, 0~100사이의 랜덤한 정수임
+            int[] num = new int[10];
+            Random rnd = new Random();
+            //rnd.Next(101);
+
+            Console.WriteLine("아마 빈방일걸요?");
+            for(int i = 0; i < num.Length; i++)
+            {
+                Console.WriteLine("{0}", num[i]);
+            }
+
+            Console.WriteLine("랜덤값을 넣어보겠습니다!");
+            for (int i = 0; i < num.Length; i++)
+            {
+                num[i] = rnd.Next(101);
+                Console.WriteLine("{0}", num[i]);
+            }

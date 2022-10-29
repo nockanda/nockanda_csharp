@@ -1,0 +1,30 @@
+//예제5-2)영어 문장을 입력하면 알파뱃 갯수와 비율을 출력하라!
+            string str = "mango apple banana redorange kiwi whitegreenbanana";
+            //abcdefghijklmnopqrstuvwxyz
+            int[] alphabet = new int[26]; //0:a 1:b ....
+            //int는 4바이트의 숫자를 담을수 있다
+            //대략 -21억~+21억 정도 담을 수 있거덩요?
+            //char는 1바이트의 숫자를 담을 수 있다.
+            //128가지의 경우를 담을 수 있다.
+            //97 : 'a'  98 : 'b'
+
+            //97(a)~122(z)
+            //(char)97 == 'a'
+            //(int)'a' == 97
+            for(int i = 0; i < str.Length; i++)
+            {
+                for(int j = 'a'; j <= 'z'; j++)
+                {
+                    //str[i]   j
+                    //alphabet[j-97]
+                    if(str[i] == (char)j)
+                    {
+                        alphabet[j - 97]++;
+                    }
+                }
+            }
+            
+            for(int i = 0;i< alphabet.Length; i++)
+            {
+                Console.WriteLine("{0} = {1}", (char)(97 + i), alphabet[i]);
+            }

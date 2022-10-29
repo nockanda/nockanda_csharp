@@ -1,0 +1,28 @@
+static void Main(string[] args)
+        {
+            //예제5)단어 2개 입력받아서
+            //길이가 긴 단어를 출력하는
+            //함수를 구현하라!(함수내/메인함수내)
+            string str1 = "abc";
+            string str2 = "defgggg";
+            string output = longlong(str1, str2);
+            Console.WriteLine("{0}", output);
+        }
+        static string longlong(string str1, string str2)
+        {
+            string output = "";
+            if(str1.Length < str2.Length)
+            {
+                output = str2;
+            }
+            else if(str1.Length > str2.Length)
+            {
+                output = str1;
+            }
+            else
+            {
+                output = str1 + str2;
+                //return str1+str2;
+            }
+            return output;
+        }

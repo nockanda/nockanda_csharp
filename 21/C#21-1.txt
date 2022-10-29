@@ -1,0 +1,15 @@
+/*
+ * C#21-1 1초에 한번 적당한 메시지를
+ * 시리얼 통신으로 컴퓨터로 보내는 코드
+ */
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  Serial.println("녹칸다의 C#예제입니다!");
+  delay(1000);
+}

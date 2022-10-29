@@ -1,0 +1,25 @@
+//입력한 4개의 숫자가 비밀번호와 일치하는지 판별하는 프로그램
+            //단 숫자는 0~9이다.
+            //비밀번호는 1234이다.
+            int num1;
+            int num2;
+            int num3;
+            int num4;
+
+            string input = Console.ReadLine();
+            num1 = int.Parse(input);
+            input = Console.ReadLine();
+            num2 = int.Parse(input);
+            input = Console.ReadLine();
+            num3 = int.Parse(input);
+            input = Console.ReadLine();
+            num4 = int.Parse(input);
+
+            if(num1 == 1 && num2 == 2 && num3 == 3 && num4 == 4)
+            {
+                Console.WriteLine("문이 열렸습니다!");
+            }
+            else
+            {
+                Console.WriteLine("너 누구니..?");
+            }

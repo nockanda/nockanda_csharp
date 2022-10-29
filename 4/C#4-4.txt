@@ -1,0 +1,20 @@
+//예제4)숫자 5개를 연속으로 입력받아서 정렬해서 출력하고 합과 평균을 구하라!
+            //단, 0~100사이의 랜덤한 정수임
+            int[] num = new int[5];
+
+            for (int i = 0; i < num.Length; i++)
+            {
+                Console.WriteLine("{0}번쨰 수를 입력해주세요!", i + 1);
+                num[i] = int.Parse(Console.ReadLine());
+            }
+
+            Console.WriteLine("정렬한 결과입니다");
+            int sum = 0;
+            Array.Sort(num);
+            for (int i = 0; i < num.Length; i++)
+            {
+                sum += num[i];
+                Console.WriteLine("{0}", num[i]);
+            }
+
+            Console.WriteLine("합은 {0}이고, 평균은 {1}이다!", sum, (double)sum / num.Length);

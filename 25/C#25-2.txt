@@ -1,0 +1,50 @@
+/*
+ * C#25-2 FND디스플레이 4개를 윈폼으로 제어해보자
+ * TM1637 4개는 아래와 같이 연결했다.
+ * 1번 CLK :D2, DIO :D3
+ * 2번 CLK :D4, DIO :D5
+ * 3번 CLK :D6, DIO :D7
+ * 4번 CLK :D8, DIO :D9
+ */
+#include <Arduino.h>
+#include <TM1637Display.h>
+#define CLK 2
+#define DIO 3
+#define CLK2 4
+#define DIO2 5
+#define CLK3 6
+#define DIO3 7
+#define CLK4 8
+#define DIO4 9
+
+TM1637Display display(CLK, DIO);
+TM1637Display display2(CLK2, DIO2);
+TM1637Display display3(CLK3, DIO3);
+TM1637Display display4(CLK4, DIO4);
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  display.setBrightness(0x0f);
+  display2.setBrightness(0x0f);
+  display3.setBrightness(0x0f);
+  display4.setBrightness(0x0f);
+}
+byte recv[8];
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //윈폼에서 아두이노로 뭔가 날린값이 있다면..
+    Serial.readBytes(recv,8);
+    int value1 = recv[0]*256 + recv[1];
+    int value2 = recv[2]*256 + recv[3];
+    int value3 = recv[4]*256 + recv[5];
+    int value4 = recv[6]*256 + recv[7];
+    display.showNumberDec(value1, false);
+    display2.showNumberDec(value2, false);
+    display3.showNumberDec(value3, false);
+    display4.showNumberDec(value4, false);
+
+    Serial.write(recv,8);
+  }
+}

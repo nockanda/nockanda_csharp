@@ -1,0 +1,36 @@
+/*
+ * C#27-1 윈폼에서 받은 스탭수대로 스탭모터 움직이기
+ */
+#include <Stepper.h>
+const int stepsPerRevolution = 2048;
+                                   //IN 4 2 3 1
+Stepper myStepper(stepsPerRevolution, 11, 9, 10, 8);
+
+void setup() {
+  // put your setup code here, to run once:
+  myStepper.setSpeed(10);
+  Serial.begin(9600);
+}
+byte recv[2];
+byte senddata[2];
+int count =0;
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //받는부분
+    Serial.readBytes(recv,2);
+    int data = (recv[0]*256)+recv[1];
+    //0~4096 
+    data = data-2048;
+    myStepper.step(data); //512
+    count += data;
+    //512 1024 1516 2048
+    //720도나 360도나 같은각도인데...
+    //400 ... 40 
+    int degree = (int)((count/2048.0)*360); //각도환산
+    degree = (degree % 360) +360;
+    senddata[0] = degree/256;
+    senddata[1] = degree%256;
+    Serial.write(senddata,2);
+  }
+}

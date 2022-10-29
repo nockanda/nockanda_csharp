@@ -1,0 +1,22 @@
+//성적에따라 학점을 부여하는 콘솔프로그램 만들어보기
+            //100점만점이라고 할때
+            //90~100 A
+            //80~89 B
+            //70~79 C
+            //그외는 D
+            int num = int.Parse(Console.ReadLine());
+            if(num >= 90)
+            {
+                Console.WriteLine("너님 A");
+            }else if(num >= 80)
+            {
+                Console.WriteLine("너님 B");
+            }
+            else if(num >=70)
+            {
+                Console.WriteLine("너님 C");
+            }
+            else
+            {
+                Console.WriteLine("너님 D");
+            }

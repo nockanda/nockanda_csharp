@@ -1,0 +1,21 @@
+/*
+ * C#23-1 윈폼하고 2바이트 송수신을 하는 예제
+ */
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+}
+byte data[2];
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //만약에 컴퓨터쪽에서 날라오는 값이 있다면~
+    Serial.readBytes(data, 2);
+    Serial.write(data[0]);
+    Serial.write(data[1]);
+  }
+  
+  //Serial.write(123);
+  //delay(1000);
+}

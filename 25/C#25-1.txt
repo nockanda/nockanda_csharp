@@ -1,0 +1,28 @@
+/*
+ * C#25-1 FND디스플레이 1개를 윈폼으로 제어해보자
+ * TM1637의 CLK는 D2포트에 DIO는 D3포트에 연결했다.
+ */
+#include <Arduino.h>
+#include <TM1637Display.h>
+#define CLK 2
+#define DIO 3
+
+TM1637Display display(CLK, DIO);
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  display.setBrightness(0x0f);
+}
+byte recv[2];
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //윈폼에서 아두이노로 뭔가 날린값이 있다면..
+    Serial.readBytes(recv,2);
+    int value = recv[0]*256 + recv[1];
+    display.showNumberDec(value, false);
+
+    Serial.write(recv,2);
+  }
+}

@@ -1,0 +1,30 @@
+//예제9)xx초등학교에 1학년부터 6학년까지 있고 
+            //각 학년은 1~5반까지 있고 한반에 30명씩 있다고 할때
+            //각 학생의 키를 170~190사이로 랜덤으로 초기화해서 출력하라!
+            //예제10)전체 학년의 키를 정렬해서 출력하고 합과 평균을 구하라!
+            //각학년의 평균을 계산하라!
+            int[,,] student = new int[6,5,30];
+            Random rnd = new Random();
+
+            int sum = 0;
+            for (int i = 0; i < student.GetLength(0); i++)
+            {
+                Console.WriteLine("{0}학년입니다!", i + 1);
+                int sum2 = 0;
+                for (int j = 0; j < student.GetLength(1); j++)
+                {
+                    Console.WriteLine("{0}반입니다!", j + 1);
+                    for (int k = 0; k < student.GetLength(2); k++)
+                    {
+                        student[i, j, k] = rnd.Next(170, 191);
+                        sum += student[i, j, k];
+                        sum2 += student[i, j, k];
+                        Console.WriteLine("{0}", student[i, j, k]);
+                    }
+                    Console.WriteLine();
+                }
+                Console.WriteLine("{0}학년의 평균은 {1}입니다!", i+1, (double)sum2 / (student.GetLength(1)* student.GetLength(2)));
+                Console.WriteLine("------------------------");
+
+            }
+            Console.WriteLine("전체의 합은 {0}이고, 평균은 {1}이다",sum,(double)sum/student.Length);

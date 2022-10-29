@@ -1,0 +1,36 @@
+/*
+ * C#26-1 서보2개를 윈폼으로 제어해보자!
+ */
+#include <Servo.h>
+
+Servo myservo1;
+Servo myservo2;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  myservo1.attach(9);
+  myservo2.attach(10);
+}
+byte recv[3];
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //윈폼에서 보낸걸 받는 부분
+    Serial.readBytes(recv,3);
+    if(recv[2] == '\n'){
+      recv[0] = constrain(recv[0],0,180);    
+      recv[1] = constrain(recv[1],0,180);
+      if(recv[0] != 26 && recv[1] != 26){
+       myservo1.write(recv[0]); 
+       myservo2.write(recv[1]); 
+       delay(10);
+       Serial.write(recv,3);
+      }
+    }else{
+      while(Serial.read() == '\n'){
+        
+      }
+    }
+  }
+}

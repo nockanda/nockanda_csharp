@@ -1,0 +1,10 @@
+//예제5)한 학급에 학생이 30명이라고 할때 
+            //각 학생의 키를 170~190사이로 랜덤으로 초기화해서 출력하라!
+            int[] student = new int[30];
+            Random rnd = new Random();
+
+            for(int i = 0; i < student.Length; i++)
+            {
+                student[i] = rnd.Next(170, 191);
+                Console.WriteLine("{0}", student[i]);
+            }

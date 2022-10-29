@@ -1,0 +1,20 @@
+//예제2)파일에 저장된 애국가의
+            //특정단어를 다른 것으로 바꾸어서 저장하라!
+            //2-1무궁화를 장미로 바꿔라
+
+            string path = @"./애국가.txt";
+            FileStream fs = new FileStream(path, FileMode.OpenOrCreate);
+            //read
+            StreamReader sr = new StreamReader(fs, Encoding.UTF8);
+
+            string input = "";
+            while (!sr.EndOfStream)
+            {
+                input += sr.ReadLine() + "\n";
+            }
+            Console.WriteLine(input.Replace("무궁화", "장미"));
+
+            sr.Close();
+            sr.Dispose();
+            fs.Close();
+            fs.Dispose();

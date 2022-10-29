@@ -1,0 +1,26 @@
+static void Main(string[] args)
+        {
+            //예제6)배열을 입력받아서 합/평균을 계산하는 함수를 구현하라!
+            int[] num = new int[] { 1, 2, 3, 4, 5, 6, 7,11 };
+
+            int output = sum(num);
+            Console.WriteLine("{0}", output);
+            double output2 = average(num);
+            Console.WriteLine("{0}", output2);
+        }
+        static int sum(int[] num)
+        {
+            //num
+            int sum = 0;
+            for(int i = 0; i < num.Length; i++)
+            {
+                sum += num[i];
+            }
+            return sum;
+        }
+        static double average(int[] num)
+        {
+            //num
+            int s = sum(num);
+            return (double)s / num.Length;
+        }

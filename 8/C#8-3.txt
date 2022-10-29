@@ -1,0 +1,18 @@
+ //예제1)파일에 저장된 애국가를 불러들여서
+            //콘솔에 출력하라!
+            string path = @"./test1.txt";
+            FileStream fs = new FileStream(path, FileMode.OpenOrCreate);
+            //read
+            StreamReader sr = new StreamReader(fs, Encoding.UTF8);
+
+            string input = "";
+            while (!sr.EndOfStream)
+            {
+                input += sr.ReadLine() + "\n";
+            }
+            Console.WriteLine(input);
+
+            sr.Close();
+            sr.Dispose();
+            fs.Close();
+            fs.Dispose();

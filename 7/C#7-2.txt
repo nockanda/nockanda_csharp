@@ -1,0 +1,38 @@
+static void Main(string[] args)
+        {
+            //예제2)숫자 10개를 배열로 입력받아서 분산을 계산하라!
+            //분산 = 배열각가의 값에 평균을 빼서 제곱해서 더해서 갯수로 나눈값
+            int[] num = new int[10];
+            Random rd = new Random();
+            for(int i = 0; i < num.Length; i++)
+            {
+                num[i] = rd.Next(1, 101);
+            }
+            Console.WriteLine("{0}", bunsan(num));
+        }
+        static int sum(int[] num)
+        {
+            int output = 0;
+            for (int i = 0; i < num.Length; i++)
+            {
+                output += num[i];
+            }
+            return output;
+        }
+        static double average(int[] num)
+        {
+            double output = sum(num);
+
+            return output / num.Length;
+        }
+        static double bunsan(int[] num)
+        {
+            double output = 0;
+            double ave = average(num);
+            for (int i = 0; i < num.Length; i++)
+            {
+                output += Math.Pow(num[i] - ave, 2);
+            }
+
+            return Math.Sqrt(output / num.Length);
+        }

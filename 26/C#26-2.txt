@@ -1,0 +1,114 @@
+/*
+ * C#26-2 서보2개를 윈폼으로 제어해보자!
+ * 버튼4개를 A0~A3에 연결했다.
+ * A0 : 서보1번 각도올림
+ * A1 : 서보1번 각도내림
+ * A2 : 서보2번 각도올림
+ * A3 : 서보2번 각도내림
+ * FND디스플레이(TM1637) 2개를 연결했다.
+ * 1번 서보모터꺼 CLK : D2/ DIO : D3
+ * 2번 서보모터꺼 CLK : D4/ DIO : D5
+ */
+#include <Servo.h>
+#include <Arduino.h>
+#include <TM1637Display.h>
+#define CLK1 2
+#define DIO1 3
+#define CLK2 4
+#define DIO2 5
+
+TM1637Display display1(CLK1, DIO1);
+TM1637Display display2(CLK2, DIO2);
+Servo myservo1;
+Servo myservo2;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  myservo1.attach(9);
+  myservo2.attach(10);
+  display1.setBrightness(0x0f);
+  display2.setBrightness(0x0f);
+  pinMode(A0,INPUT_PULLUP);
+  pinMode(A1,INPUT_PULLUP);
+  pinMode(A2,INPUT_PULLUP);
+  pinMode(A3,INPUT_PULLUP);
+}
+byte recv[3];
+byte message[3];
+byte degree1=0;
+byte degree2=0;
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //윈폼에서 보낸걸 받는 부분
+    Serial.readBytes(recv,3);
+    if(recv[2] == '\n'){
+      recv[0] = constrain(recv[0],0,180);    
+      recv[1] = constrain(recv[1],0,180);
+      if(recv[0] != 26 && recv[1] != 26){
+       myservo1.write(recv[0]); 
+       myservo2.write(recv[1]); 
+       degree1 = recv[0];
+       degree2 = recv[1];
+       display1.showNumberDec(recv[0], false);
+       display2.showNumberDec(recv[1], false);
+       delay(10);
+       Serial.write(recv,3);
+      }
+    }else{
+      while(Serial.read() == '\n'){
+        
+      }
+    }
+  }
+  //시리얼통신 이외의 부분
+  if(digitalRead(A0) == LOW){
+    //첫번쨰 서보 각도올림버튼이 눌려지면~
+    degree1++;
+    degree1 = constrain(degree1,0,180);
+    myservo1.write(degree1); 
+    display1.showNumberDec(degree1, false);
+    message[0] = degree1;
+    message[1] = degree2;
+    message[2] = '\n';
+    Serial.write(message,3);
+    delay(10);
+  }
+  if(digitalRead(A1) == LOW){
+    //첫번쨰 서보 각도내림버튼이 눌려지면~
+    degree1--;
+    degree1 = constrain(degree1,0,180);
+    myservo1.write(degree1); 
+    display1.showNumberDec(degree1, false);
+    message[0] = degree1;
+    message[1] = degree2;
+    message[2] = '\n';
+    Serial.write(message,3);
+    delay(10);
+  }
+  if(digitalRead(A2) == LOW){
+    //두번쨰 서보 각도올림버튼이 눌려지면~
+    degree2++;
+    degree2 = constrain(degree2,0,180);
+    myservo2.write(degree2); 
+    display2.showNumberDec(degree2, false);
+    message[0] = degree1;
+    message[1] = degree2;
+    message[2] = '\n';
+    Serial.write(message,3);
+    delay(10);
+  }
+  if(digitalRead(A3) == LOW){
+    //두번쨰 서보 각도내림버튼이 눌려지면~
+    degree2--;
+    degree2 = constrain(degree2,0,180);
+    myservo2.write(degree2); 
+    display2.showNumberDec(degree2, false);
+    message[0] = degree1;
+    message[1] = degree2;
+    message[2] = '\n';
+    Serial.write(message,3);
+    delay(10);
+  }
+}

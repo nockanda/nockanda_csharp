@@ -1,0 +1,31 @@
+//첫번째 예제
+            //숫자1개를 입력받고
+            //문자 1개를 입력받고
+            //숫자 1개를 입력받아서 사칙연산을 하는 프로그램을 만들어라!
+            //예시 2 + 2   결과 : 4
+            int num1;
+            int num2;
+            char op;
+
+            string input = Console.ReadLine();
+            num1 = int.Parse(input);
+            input = Console.ReadLine();
+            op = char.Parse(input); // + - / *
+            input = Console.ReadLine();
+            num2 = int.Parse(input);
+
+            if(op == '+')
+            {
+                Console.WriteLine("더하기 결과 = {0}", num1 + num2);
+            }else if(op == '-')
+            {
+                Console.WriteLine("빼기 결과 = {0}", num1 - num2);
+            }
+            else if(op == '*')
+            {
+                Console.WriteLine("곱하기 결과 = {0}", num1 * num2);
+            }
+            else if(op == '/')
+            {
+                Console.WriteLine("나누기 결과 = {0}", (double)num1 / num2);
+            }

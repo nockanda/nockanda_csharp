@@ -1,0 +1,19 @@
+static void Main(string[] args)
+        {
+            //예제4)2개의 실수의 합/평균을 계산하는 함수를 구현하라!
+            //실수2개를 함수로 보내고 계산한 결과를 메인함수에서 출력하라!
+            double result3 = sum(sum(2.5, 3.2), sum(4.3, 5.7));
+            Console.WriteLine("{0}", result3);
+            double result4 = average(5.1, 6.8);
+            Console.WriteLine("{0}", result4);
+        }
+
+        static double sum(double num1, double num2)
+        {
+            return num1 + num2;
+        }
+        static double average(double num1, double num2)
+        {
+            //return (num1+num2) / 2;
+            return sum(num1, num2) / 2;
+        }

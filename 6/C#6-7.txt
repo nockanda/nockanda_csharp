@@ -1,0 +1,50 @@
+static void Main(string[] args)
+        {
+            //예제7)엑셀에 있는 SUM, AVERAGE 구현해보자!
+            int[,] num = new int[100, 20];
+            Random rd = new Random();
+
+            for (int i = 0; i < num.GetLength(0); i++)
+            {
+                for (int j = 0; j < num.GetLength(1); j++)
+                {
+                    num[i, j] = rd.Next(1,101);
+                }
+            }
+            for (int i = 0; i < num.GetLength(0); i++)
+            {
+                for (int j = 0; j < num.GetLength(1); j++)
+                {
+                    Console.Write("\t{0},", num[i, j]);
+                }
+                Console.WriteLine();
+            }
+
+            int sum_result = sum(num);
+            Console.WriteLine("전체의 합 = {0}", sum_result);
+            double average_result = average(num);
+            Console.WriteLine("전체의 평균 = {0}", average_result);
+
+        }
+        static int sum(int[,] num)
+        {
+            int output = 0;
+            for (int i = 0; i < num.GetLength(0); i++)
+            {
+                for (int j = 0; j < num.GetLength(1); j++)
+                {
+                    output += num[i, j];
+                }
+            }
+
+            return output;
+        }
+        static double average(int[,] num)
+        {
+            double output = 0;
+            output = sum(num);
+            //num.GetLength(0)
+            //num.GetLength(1)
+            //num.Length = num.GetLength(0) * num.GetLength(1)
+            return output / num.Length;
+        }

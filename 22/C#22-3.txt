@@ -1,0 +1,48 @@
+/*
+ * C#22-3 LED8개를 D2에서부터 D9까지 순서대로 연결하고
+ * 윈폼에서 날라오는 명령어에 따라서 LED를 점멸시키시오!
+ * 예를들어 
+ * 1 1 : 1번 LED가 켜지고
+ * 1 2 : 1번 LED가 꺼진다.
+ * N 1 : N번 LED가 켜지고
+ * N 2 : N번 LED가 꺼진다.
+ * (+) LED의 점멸상태를 윈폼으로 주기적으로 보내보자
+ * (+) 윈폼에서 패턴제어, 딜레이없이 딜레이기능 구현
+ * 
+ */
+int led_array[8] = {2,3,4,5,6,7,8,9};
+int led_state[8] = {0,0,0,0,0,0,0,0};
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  for(int i = 0;i<8;i++){
+    pinMode(led_array[i],OUTPUT);
+  }
+}
+unsigned long previousMillis = 0; 
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    int led_number = Serial.parseInt();
+    int onoff = Serial.parseInt();
+    if(onoff == 1){
+      digitalWrite(led_array[led_number-1],HIGH);
+      led_state[led_number-1] = 1;
+    }else{
+      digitalWrite(led_array[led_number-1],LOW);
+      led_state[led_number-1] = 0;
+    }
+  }
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= 100) {
+    // save the last time you blinked the LED
+    previousMillis = currentMillis;
+    for(int i = 0;i<8;i++){
+      //0,0,0,0,0,0,0,0,
+      Serial.print(led_state[i]);
+      Serial.print(",");
+    }
+    Serial.println();
+  }
+  
+}

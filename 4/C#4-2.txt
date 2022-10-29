@@ -1,0 +1,22 @@
+//예제2)랜덤한 정수 10개의 합과 평균을 구하는 프로그램을 만들어보라!
+            //단, 0~100사이의 랜덤한 정수임
+            int[] num = new int[10];
+            Random rnd = new Random();
+            //rnd.Next(101);
+
+            Console.WriteLine("아마 빈방일걸요?");
+            for(int i = 0; i < num.Length; i++)
+            {
+                Console.WriteLine("{0}", num[i]);
+            }
+
+            Console.WriteLine("랜덤값을 넣어보겠습니다!");
+            int sum = 0;
+            for (int i = 0; i < num.Length; i++)
+            {
+                num[i] = rnd.Next(101);
+                sum += num[i];
+                Console.WriteLine("{0}", num[i]);
+            }
+
+            Console.WriteLine("합은 {0}이고 평균은 {1}이다!", sum, (double)sum / num.Length);

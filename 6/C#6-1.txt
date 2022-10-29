@@ -1,0 +1,12 @@
+static void Main(string[] args)
+        {
+            //예제1)함수를 호출할때마다 특정 멘트를 출력하도록 해라!
+            ment();
+            ment();
+            ment();
+        }
+
+        static void ment()
+        {
+            Console.WriteLine("특정 멘트");
+        }

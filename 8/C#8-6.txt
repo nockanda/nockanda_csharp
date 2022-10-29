@@ -1,0 +1,23 @@
+//예제3)랜덤한 숫자 100개(0에서 100사이의 수)의
+            //리스트와 합과 평균을 파일에 저장하라!
+            Random rd = new Random();
+            //rd.Next(0, 101);
+
+            string write_path = @"./randomnumber.txt";
+            FileStream write_fs = new FileStream(write_path, FileMode.OpenOrCreate);
+            StreamWriter sw = new StreamWriter(write_fs, Encoding.UTF8);
+            int[] number = new int[100];
+            int sum = 0;
+            for(int i = 0; i < 100; i++)
+            {
+                //100회 회전
+                number[i] = rd.Next(0, 101);
+                sum += number[i];
+                sw.WriteLine(i + 1 + "번째 숫자 = " + number[i]);
+            }
+            sw.WriteLine("---------------------");
+            sw.WriteLine("합이다=>" + sum);
+            sw.WriteLine("평균이다=>" + (double)sum/number.Length);
+
+            sw.Close(); sw.Dispose();
+            write_fs.Close(); write_fs.Dispose();

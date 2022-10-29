@@ -1,0 +1,24 @@
+/*
+ * C#24-1 2축조이스틱을 x축을 A0
+ * y축을 A1포트에 연결해서 각각 2바이트식
+ * 시리얼 통신으로 윈폼에다가 전송하라(적당한 시간간격으로)
+ */
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+}
+int x=0;
+int y=0;
+byte output[4];
+void loop() {
+  // put your main code here, to run repeatedly:
+  x = analogRead(A0);
+  y = analogRead(A1);
+  output[0] = x/256;
+  output[1] = x%256;
+  output[2] = y/256;
+  output[3] = y%256;
+  Serial.write(output,4);
+  delay(100);
+}
