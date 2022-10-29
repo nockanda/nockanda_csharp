@@ -1,0 +1,73 @@
+/*
+ C#예제 76-2-2 (2번아두이노용코드)
+ 아두이노에 스탭모터를 (IN1~IN4 : D11~D8) 순서로 연결했다!
+ 윈폼에서 전송하는 스탭수만큼 스탭모터를 회전시켜라!
+ */
+
+#include <SoftwareSerial.h>
+#include <Stepper.h>
+const int stepsPerRevolution = 2048;
+
+#define master 0x99 //153
+#define slave1 0x00 //0
+#define slave2 0x01 //1
+#define slave3 0x02 //2
+#define modepin 13
+#define readmode LOW
+#define sendmode HIGH
+
+SoftwareSerial rs485(2, 3); // RX, TX
+                                   //IN4(8) IN2(10) IN3(9) IN1(11)
+                                   
+Stepper myStepper(stepsPerRevolution, 8, 10, 9, 11);
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); //PC-아두이노간 TTL통신
+  rs485.begin(9600); //아두이노-rs485간 TTL통신
+  pinMode(modepin,OUTPUT); //송수신제어핀
+  digitalWrite(modepin,readmode); //수신모드
+  myStepper.setSpeed(10); //RPM
+}
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(rs485.available()){
+    //485모듈로 들어오는 값이 존재한다면
+    byte recv[10];
+    rs485.readBytes(recv,10);
+    if(recv[0] != slave2) return; //쌩~
+    
+    for(int i =0;i<10;i++){
+      Serial.print(recv[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+ 
+    byte data[10];
+    data[0] = recv[0];
+    data[1] = recv[1];
+    //응답데이터
+    data[2] = 'O';
+    data[3] = 'K';
+    for(int i =4;i<10;i++){
+      data[i] = 0x00;
+    }
+    for(int i =0;i<10;i++){
+      Serial.print(data[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+    digitalWrite(modepin,sendmode);
+    rs485.write(data,10);
+    digitalWrite(modepin,readmode);
+
+    //서버에 request를 받는부분
+    //1바퀴 = 2048step
+    //360도를 2048등분해서 활용할 수 있다!
+    //최소스탭수가 32step
+    //음수가 가능하더라... 그리고 음수가 방향에 관련된 것이더라..
+    //양의값 음의값 다 보낼 수 있는데, +-2048이 최소 최대 값이다!
+    //recv[2]:상위8비트, recv[3]:하위8비트
+    int mystep = (recv[2]*256+recv[3]) -2048;
+    myStepper.step(mystep);
+  }
+}

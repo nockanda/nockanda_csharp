@@ -1,0 +1,63 @@
+[C#윈폼87] ESP32CAM으로 팬틸트 서보모터 2개를 C#윈폼에서 제어해보기!(#7)(녹칸다/포로리야공대가자)
+
+ESP32CAM으로 팬틸트 서보모터 2개를 C#윈폼에서 제어해보기!(#7)
+-예제84편의 내용에 업그레이드를 해보자!
+-84편에서는 RTSP를 사용하는 IP카메라의 2대의 실시간 영상 스트림을 C#윈폼에 출력하였다!
+-시중에 유통되는 IP카메라를 보면 카메라가 찍는 각도를 팬틸트 모터를 이용해서 제어할 수 있다!(주로 스마트폰으로..)
+-녹칸다의 ESP32CAM을 이용한 CCTV도 그러한 기능이 있으면 좋을 것 같았다!
+-서보모터(SG90) 2개를 준비해서 ESP32CAM으로 팬틸트 서보모터를 제어해보자!
+-그러나 아두이노에서 일반적으로 사용하는 라이브러리로는 작동이 안되었다..!
+-구글신의 도움을 얻어서 일단 방법은 얻었으니 어떤 전략으로 구현하는지 살펴보도록 하자!
+-ESP32CAM이 서보모터를 제어할 수 있는데서 끝나는 것이 아니다!
+-궁극적으로는 C#에서 ESP32CAM으로 어떤 메시지를 보내어서 서보모터가 제어가 되어야한다!
+-이것은 ESP32CAM의 내부 환경변수를 바꾸는 것을 이미 진행한 바 있으므로 그렇게 어렵진 않을 듯 하다(POST 메시지 전송)
+
+ 
+
+
+ 
+
+ESP32보드에서 서보모터를 작동시키는 메카니즈으으음(예시)
+//1639(0)
+//OK
+//8191(180)
+//OK
+
+ledcSetup(4, 50, 16); //channel, freq, resolution
+ledcAttachPin(servo1, 4); // pin, channel
+servoWrite(4,0);
+
+void servoWrite(int ch, int deg)
+{
+  int duty = deg*36.4 + 1639;
+  Serial.println(duty);
+  ledcWrite(ch, duty);
+}
+
+ 
+
+C#윈폼 코드(opencvsharp은 용량이 커서 삭제)
+
+example87.zip
+0.09MB
+아두이노용 코드(원출처는 코드에 포함)
+
+예제87_ESP32CAM.zip
+0.08MB
+ 
+
+녹칸다의 직전강의(84편)
+
+https://bota.tistory.com/1494
+
+관련라이브러리(LiquidCrystal_I2C)
+
+https://github.com/johnrickman/LiquidCrystal_I2C
+
+기본프로젝트(C#에서 ESP32CAM 튜토리얼)
+
+https://bota.tistory.com/1487?category=694779
+
+RTSP예제코드(이건 녹칸다가 구현한게 아님!)
+
+https://github.com/bnbe-club/rtsp-video-streamer-diy-14

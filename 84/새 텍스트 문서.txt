@@ -1,0 +1,32 @@
+[C#윈폼84] ESP32CAM의 RTSP와 OPENCVSHARP을 이용해서 실시간 IP카메라 여러대 영상 스트리밍해보기!(#6)(녹칸다/포로리야공대가자)
+
+ESP32CAM의 RTSP와 OPENCVSHARP을 이용해서 실시간 IP카메라 여러대 영상 스트리밍해보기!(#6)
+-예제83편의 내용에 업그레이드를 해보자!
+-83편에서는 RTSP를 사용하는 IP카메라의 실시간 CCTV 영상 스트림을 윈폼에 OPENCVSHARP을 이용해서 출력하고(미리보기기능) 녹화하고 다시볼 수 있는 기능을 구현했다!
+-이번편에서는 IP카메라가 여러대일때(예제에서는 2대를 사용함) 실시간 CCTV영상을 윈폼에 출력할 수 있는 방법에 대해 고민해보자!
+-아마도 채널별로 RTSP영상 스트림을 화면에 출력하되 출력할 이미지를 분할해서 채널별로 드로잉하면 될 것 같다!
+-그리고 영상채널이 2채널이라고 가정했을때 분할해서 영상을 저장하고 다시 볼 수 있는 기능을 구현해보자!
+
+ 
+
+C#용코드(OPENCVSHARP 용량이 커서 CS파일만 업로드!)*프로젝트로 올리려고 했는데 10M용량 제한이 있네요 ㅠㅠ opencv가 용량이 큽니다(150메가정도)
+OPENCVSHARP을 제외하고 프로젝트를 올리니 별도로 설치하셔야합니다~~~!
+
+example84.zip
+0.09MB
+
+ESP32CAM용 코드(원출처는 파일안에 포함)
+
+예제82_ESP32CAM.zip
+0.08MB
+관련라이브러리(LiquidCrystal_I2C)
+
+https://github.com/johnrickman/LiquidCrystal_I2C
+
+기본프로젝트(C#에서 ESP32CAM 튜토리얼)
+
+https://bota.tistory.com/1487?category=694779
+
+RTSP예제코드(이건 녹칸다가 구현한게 아님!)
+
+https://github.com/bnbe-club/rtsp-video-streamer-diy-14

@@ -1,0 +1,32 @@
+[C#윈폼86] (OPENAPI) 한국환경공단 측정소별 실시간 미세먼지/공기질 C#윈폼에 그래프로 출력해보기!(#2)(녹칸다/포로리야공대가자)
+
+(OPENAPI) 한국환경공단 측정소별 실시간 미세먼지/공기질 C#윈폼에 그래프로 출력해보기!(#2)
+-녹칸다의 openapi C# 프로젝트이다!
+-한국환경공단(에어코리아)에서 제공하는 API 서비스이다!
+-전국에 설치되어있는 공기질 측정소의 측정소이름으로 조회해서 측정한 데이터를 실시간으로 받아 올 수 있는 OPENAPI서비스이다!
+-응답받는 데이터에는 아래와 같은 정보가 포함되어있다!
+-측정일,측정망 정보,아황산가스 농도,일산화탄소 농도,오존 농도
+-C#윈폼 어플리케이션을 웹클라이언트로 동작하도록하고 openapi restful server에 get방식으로 request해서 결과를 response받은 다음 xml데이터를 파싱해보자!
+-그리고 데이터영역을 확보한다음 C#윈폼의 chart 클래스를 이용해서 그래프로 결과를 출력해보자!
+-open api를 이용하기 위해서는 private key가 필요한데 어떻게 발급하는지 살펴보자!(api 케바케로 등록)
+-OPENAPI는 xml이나 json으로 결과를 response받을 수 있는데 xml은 기본라이브러리를 활용하면되고 json은 별도로 설치를 해야 활용가능하므로 xml을 기본으로 활용해보자!
+-xml과 json은 트리구조이다!
+c#의 xml parser를 이용해서 dataset이 포함된 parent -node를 xml node로 지정한다음 child node를 불러내서 활용하면 될듯하다~!
+-아두이노에서 진행하는 OPENAPI는 늘 메모리 이슈가 있었는데 C#윈폼은 메모리가 매우 널널하므로 그러한 걱정은 할 필요가 없다!
+-크게 웹클라이언트로 동작하게 하는 부분, 받아온 결과를 xml로 처리하는부분, 데이터로 그래프를 그리는 부분 3개로 분할해서 순차적으로 진행해본다!
+
+example86.zip
+0.05MB
+ 
+
+(쿼리샘플) http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?serviceKey=서비스키&returnType=xml&numOfRows=1&stationName=%EC%A2%85%EB%A1%9C%EA%B5%AC&dataTerm=DAILY
+
+ 
+
+-아두이노 관련 선행프로젝트
+
+https://bota.tistory.com/1438
+
+한국환경공단측정소조회
+
+https://www.airkorea.or.kr/web/stationInfo?pMENU_NO=93

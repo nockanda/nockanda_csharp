@@ -1,0 +1,76 @@
+/*
+ C#예제 79-2 (모터드라이버용 아두이노코드)
+ 아두이노에 모터드라이버를 IN3핀을 D4에 연결, IN4핀을 D5에 ENB핀을 D6에 연결했다
+ 윈폼에서 데이터를 받아서 모터드라이버를 작동시켜라!
+ */
+
+#include <SoftwareSerial.h>
+#define command1 0x01 //방향
+#define command2 0x02 //파워
+#define modepin 13
+#define readmode LOW
+#define sendmode HIGH
+ 
+#define IN3 4 //디지털제어
+#define IN4 5 //디지털제어
+#define ENB 6 //아날로그제어
+
+#define slaveid 0x01
+
+SoftwareSerial rs485(2, 3); // RX, TX
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); //PC-아두이노간 TTL통신
+  rs485.begin(9600); //아두이노-rs485간 TTL통신
+  pinMode(modepin,OUTPUT); //송수신제어핀
+  digitalWrite(modepin,readmode); //수신모드
+
+  pinMode(IN3,OUTPUT);
+  pinMode(IN4,OUTPUT);
+}
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(rs485.available()){
+    //485모듈로 들어오는 값이 존재한다면
+    byte recv[10];
+    rs485.readBytes(recv,10);
+    if(recv[0] != slaveid) return; //쌩~
+
+    
+    for(int i =0;i<10;i++){
+      Serial.print(recv[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+
+    //recv[2] 방향,  recv[3] 파워
+      if(recv[2] == 0){
+        digitalWrite(IN3,HIGH);
+        digitalWrite(IN4,LOW);
+      }else if(recv[2] == 1){
+        digitalWrite(IN3,LOW);
+        digitalWrite(IN4,HIGH);
+      }
+      analogWrite(ENB,recv[3]);
+   
+    
+    byte data[10];
+    data[0] = recv[0];
+    data[1] = recv[1];
+    //응답데이터
+    data[2] = 'O';
+    data[3] = 'K';
+    for(int i =4;i<10;i++){
+      data[i] = 0x00;
+    }
+    for(int i =0;i<10;i++){
+      Serial.print(data[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+    digitalWrite(modepin,sendmode);
+    rs485.write(data,10);
+    digitalWrite(modepin,readmode);
+  }
+}

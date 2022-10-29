@@ -1,0 +1,90 @@
+/*
+ C#예제 75-3 (LPG가스센서용 코드)
+ 아두이노에 MQ-6를 A0에 연결했다!
+ 가스센서의 결과를 윈폼으로 RS485를 이용해서 전송해보자!
+ */
+
+#include <SoftwareSerial.h>
+#include <MQUnifiedsensor.h>
+
+//Definitions
+#define placa "Arduino UNO"
+#define Voltage_Resolution 5
+#define pin A0 //Analog input 0 of your arduino
+#define type "MQ-6" //MQ6
+#define ADC_Bit_Resolution 10 // For arduino UNO/MEGA/NANO
+#define RatioMQ6CleanAir 10   //RS / R0 = 10 ppm 
+
+#define master 0x99 //153
+#define slave1 0x01 //0
+#define slave2 0x02 //1
+#define slave3 0x03 //1
+#define modepin 13
+#define readmode LOW
+#define sendmode HIGH
+SoftwareSerial rs485(2, 3); // RX, TX
+MQUnifiedsensor MQ6(placa, Voltage_Resolution, ADC_Bit_Resolution, pin, type);
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); //PC-아두이노간 TTL통신
+  rs485.begin(9600); //아두이노-rs485간 TTL통신
+  pinMode(modepin,OUTPUT); //송수신제어핀
+  digitalWrite(modepin,readmode); //수신모드
+
+  MQ6.setRegressionMethod(1); //_PPM =  a*ratio^b
+  MQ6.setA(2127.2); MQ6.setB(-2.526); // Configurate the ecuation values to get CH4 concentration
+  
+  MQ6.init();   
+  
+  Serial.print("Calibrating please wait.");
+  float calcR0 = 0;
+  for(int i = 1; i<=10; i ++)
+  {
+    MQ6.update(); // Update data, the arduino will be read the voltage on the analog pin
+    calcR0 += MQ6.calibrate(RatioMQ6CleanAir);
+    Serial.print(".");
+  }
+  MQ6.setR0(calcR0/10);
+  Serial.println("  done!.");
+}
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(rs485.available()){
+    //485모듈로 들어오는 값이 존재한다면
+    byte recv[10];
+    rs485.readBytes(recv,10);
+    if(recv[0] != slave3) return; //쌩~
+    
+    for(int i =0;i<10;i++){
+      Serial.print(recv[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+
+    
+    byte data[10];
+
+    //MQ-6가스데이터 측정
+    MQ6.update(); // Update data, the arduino will be read the voltage on the analog pin
+    float sensor = MQ6.readSensor(); //20~30만
+    unsigned long sensor2 = sensor * 100;
+
+    //00000000 00000000 00000000
+    data[0] = recv[0];
+    data[1] = recv[1];
+    data[2] = (sensor2 >>16)&0xFF;//
+    data[3] = (sensor2 >>8)&0xFF;//
+    data[4] = (sensor2&0xFF);
+    for(int i =5;i<10;i++){
+      data[i] = 0x00;
+    }
+    for(int i =0;i<10;i++){
+      Serial.print(data[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+    digitalWrite(modepin,sendmode);
+    rs485.write(data,10);
+    digitalWrite(modepin,readmode);
+  }
+}

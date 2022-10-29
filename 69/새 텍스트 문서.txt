@@ -1,0 +1,22 @@
+[C#윈폼강의] 포로리야 공대가자 #69 시리얼포트 46편 feat. 아두이노/3단인증 시스템 연동
+
+(시리얼포트 46편 feat. 아두이노/3단인증 시스템 연동)(고난도)
+비밀번호, RFID, 지문을 모두 찍어야 통과 가능하다!
+아두이노 프로젝트에서 구현한 3단인증 시스템을 C#과 연동해보자!
+비밀번호, RFID, 지문 3개의 인증을 거쳐야 3단인증이 가능하다!
+인증의 결과를 윈폼과 연동하고 윈폼에서 원격으로 제어가능하도록
+뭔가? 구현해보자!
+
+ 
+
+관련라이브러리(finger print)
+
+https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library
+
+관련라이브러리(keypad)
+
+https://github.com/Chris--A/Keypad
+
+필요라이브러리(RC522)
+
+https://github.com/miguelbalboa/rfid

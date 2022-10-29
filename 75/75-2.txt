@@ -1,0 +1,96 @@
+/*
+ C#예제 75-2 (미세먼지센서용 코드)
+ 아두이노에 미세먼지센서를 아날로그핀을 A0에 디지털핀을 D4에 연결했다!
+ 미세먼지센서의 결과를 윈폼으로 RS485를 이용해서 전송해보자!
+ */
+
+#include <SoftwareSerial.h>
+#define master 0x99 //153
+#define slave1 0x01 //0
+#define slave2 0x02 //1
+#define slave3 0x03 //1
+#define modepin 13
+#define readmode LOW
+#define sendmode HIGH
+SoftwareSerial rs485(2, 3); // RX, TX
+
+int measurePin = A0; //Connect dust sensor to Arduino A0 pin
+int ledPower = 4;   //Connect 3 led driver pins of dust sensor to Arduino D2
+
+int samplingTime = 280;
+int deltaTime = 40;
+int sleepTime = 9680;
+
+ 
+float voMeasured = 0;
+float calcVoltage = 0;
+float dustDensity = 0;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); //PC-아두이노간 TTL통신
+  rs485.begin(9600); //아두이노-rs485간 TTL통신
+  pinMode(modepin,OUTPUT); //송수신제어핀
+  digitalWrite(modepin,readmode); //수신모드
+  pinMode(ledPower,OUTPUT);
+}
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(rs485.available()){
+    //485모듈로 들어오는 값이 존재한다면
+    byte recv[10];
+    rs485.readBytes(recv,10);
+    if(recv[0] != slave2) return; //쌩~
+    
+    for(int i =0;i<10;i++){
+      Serial.print(recv[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+    
+    byte data[10];
+    //미세먼지센서 측정지점
+    float sensor = get_pm();
+    sensor = sensor*100;
+    if(sensor > 65536) sensor = 65535;
+
+    
+    data[0] = recv[0];
+    data[1] = recv[1];
+    //응답데이터
+    data[2] = ((int)sensor)/256;
+    data[3] = ((int)sensor)%256;
+    for(int i =4;i<10;i++){
+      data[i] = 0x00;
+    }
+    for(int i =0;i<10;i++){
+      Serial.print(data[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+    digitalWrite(modepin,sendmode);
+    rs485.write(data,10);
+    digitalWrite(modepin,readmode);
+  }
+}
+
+
+float get_pm(){
+  digitalWrite(ledPower,LOW); // power on the LED
+  delayMicroseconds(samplingTime);
+  voMeasured = analogRead(measurePin); // read the dust value
+  delayMicroseconds(deltaTime);
+  digitalWrite(ledPower,HIGH); // turn the LED off
+  delayMicroseconds(sleepTime);
+  calcVoltage = voMeasured * (5.0 / 1024.0);
+  dustDensity = 0.17 * calcVoltage - 0.1;
+  return dustDensity;
+  /*
+  Serial.print("Raw Signal Value (0-1023): ");
+  Serial.print(voMeasured);
+  Serial.print(" - Voltage: ");
+  Serial.print(calcVoltage);
+  Serial.print(" - Dust Density: ");
+  Serial.println(dustDensity); // unit: mg/m3
+  */
+}

@@ -1,0 +1,25 @@
+/*
+ * C#68-2-3 아두이노 쫄병의 스탭모터를 제어하는 코드
+ */
+#include <Stepper.h>
+const int stepsPerRevolution = 2048;
+#define ARDUINOID 2
+Stepper myStepper(stepsPerRevolution, 11, 9, 10, 8);
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  myStepper.setSpeed(10);
+  pinMode(2,OUTPUT);
+}
+byte recv[2];
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available()>0){
+    Serial.readBytes(recv,2);
+    if(recv[0] == ARDUINOID){
+      //recv[1]
+      int degree = (recv[1] - 64) *32;
+      myStepper.step(degree);
+    }
+  }
+}

@@ -1,0 +1,21 @@
+/*
+ * C#68-1-2 아두이노 쫄병의 LED를 제어하는 코드
+ */
+#define ARDUINOID 1
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(2,OUTPUT);
+}
+byte recv[2];
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available()>0){
+    Serial.readBytes(recv,2);
+    if(recv[0] == ARDUINOID){
+      if(recv[1] == 0) digitalWrite(2,LOW);
+      else if(recv[1] == 1) digitalWrite(2,HIGH);
+    }
+  }
+}

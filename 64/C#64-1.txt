@@ -1,0 +1,35 @@
+/*
+ * C#예제64-1 워터펌프를 D2포트에 연결해서
+ * 작동상태를 윈폼에다가 전송하라!
+ */
+#define waterlevel 2
+
+byte pre_sensor=0;
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); //나 시리얼 통신 할거야~
+  pinMode(waterlevel,INPUT_PULLUP);
+  //워터레벨센서 감지되면 0
+  //평소에는 1
+  pre_sensor = digitalRead(waterlevel); //과거의 센서값
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  byte sensor = digitalRead(waterlevel); //현재의 센서값
+
+  if(pre_sensor == HIGH && sensor == LOW){
+    //N-1루프에서 수위가 낮았는데 N에서 수위가 높아진경우
+    //Serial.println("수위가 높아짐");
+    Serial.write((byte)1);
+  }
+  if(pre_sensor == LOW && sensor == HIGH){
+    //높았던 수위가 낮아진 경우
+    //Serial.println("수위가 낮아짐");
+    Serial.write((byte)0);
+  }
+  
+  delay(100);
+
+  pre_sensor = sensor;
+}

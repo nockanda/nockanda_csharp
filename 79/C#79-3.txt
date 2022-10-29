@@ -1,0 +1,78 @@
+
+/*
+ C#예제 79-3 (홀센서용 RPM측정 아두이노코드)
+ 아두이노에 홀센서를 D2에 연결해서 인터럽트기능으로 펄스의수를 세어보자!
+ 그리고 RPM값으로 환산해서 마스터가 요청하는 주기에 맞춰서 결과를 전송하자!
+ */
+
+#include <SoftwareSerial.h>
+#define modepin 13
+#define readmode LOW
+#define sendmode HIGH
+#define slaveid 0x02
+unsigned long previousMillis = 0; 
+const byte interruptPin = 2;
+volatile int count = 0;
+int motor_rpm = 0;
+
+SoftwareSerial rs485(3, 4); // RX, TX
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); //PC-아두이노간 TTL통신
+  rs485.begin(9600); //아두이노-rs485간 TTL통신
+  pinMode(modepin,OUTPUT); //송수신제어핀
+  digitalWrite(modepin,readmode); //수신모드
+  pinMode(interruptPin, INPUT);
+  attachInterrupt(digitalPinToInterrupt(interruptPin), rpm, RISING);
+}
+void loop() {
+  // put your main code here, to run repeatedly:
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= 1000) {
+    previousMillis = currentMillis;
+    motor_rpm = (count/2)*60;
+    Serial.print((count/2)*60);
+    Serial.println(" RPM");
+    count = 0;
+  }
+  
+  if(rs485.available()){
+    //485모듈로 들어오는 값이 존재한다면
+    byte recv[10];
+    rs485.readBytes(recv,10);
+    if(recv[0] != slaveid) return; //쌩~
+    
+    for(int i =0;i<10;i++){
+      Serial.print(recv[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+
+    //motor_rpm
+    //1바이트 : 0~255
+    //2바이트 : 65536
+    
+    byte data[10];
+    data[0] = recv[0];
+    data[1] = recv[1];
+    //응답데이터
+    data[2] = motor_rpm/256;
+    data[3] = motor_rpm%256;
+    for(int i =4;i<10;i++){
+      data[i] = 0x00;
+    }
+    for(int i =0;i<10;i++){
+      Serial.print(data[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+    digitalWrite(modepin,sendmode);
+    rs485.write(data,10);
+    digitalWrite(modepin,readmode);
+  }
+}
+
+void rpm() {
+  count++;
+}
