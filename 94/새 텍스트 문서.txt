@@ -1,0 +1,40 @@
+[C#윈폼94] (OPENAPI) 한국수출입은행 현재환율정보 C#윈폼에 리스트뷰로 출력해보기!(#3)(녹칸다/포로리야공대가자)
+
+(OPENAPI) 한국수출입은행 현재환율정보 C#윈폼에 리스트뷰로 출력해보기!(#3)
+-녹칸다의 openapi C# 프로젝트이다!
+-한국수출입은행에서 제공하는 API 서비스이다!
+-일별로 업데이트 되는 환율정보를 받아 올 수 있는 OPENAPI서비스이다!
+-응답받는 데이터에는 아래와 같은 정보가 포함되어있다!
+-통화코드,국가/통화명,전신환(송금)받으실때,전신환(송금)보내실때,매매 기준율,장부가격,년환가료율,10일환가료율,서울외국환중개,매매기준율,서울외국환중개장부가격
+-C#윈폼 어플리케이션을 웹클라이언트로 동작하도록하고 openapi restful server에 get방식으로 request해서 결과를 response받은 다음 xml데이터를 파싱해보자!
+-그리고 데이터영역을 확보한다음 C#윈폼의 리스트뷰를 이용해서 출력해보자!
+-open api를 이용하기 위해서는 private key가 필요한데 어떻게 발급하는지 살펴보자!(api 케바케로 등록)
+-OPENAPI는 xml이나 json으로 결과를 response받을 수 있는데 xml은 기본라이브러리를 활용하면되고 json은 별도로 설치를 해야 활용가능하므로 xml을 기본으로 활용해보자!
+-기본은 xml인데 환율OPENAPI는 JSON을 지원한다! 그래서 JSON으로 한번 해봐야겠다(코드 난이도가 상승함)
+-xml과 json은 트리구조이다!
+-C#에서 jSON을 활용할 수 있는 newtonsoft.json을 설치해서 활용해보자!
+-아두이노에서 진행하는 OPENAPI는 늘 메모리 이슈가 있었는데 C#윈폼은 메모리가 매우 널널하므로 그러한 걱정은 할 필요가 없다!
+-크게 웹클라이언트로 동작하게 하는 부분, 받아온 결과를 JSON로 처리하는부분, 데이터를 리스트뷰에 집어넣는 부분 3개로 분할해서 순차적으로 진행해본다!
+-이용시 유의사항) 비영업일의 데이터, 혹은 영업당일 11시 이전에 해당일의 데이터를 요청할 경우 null 값이 반환
+
+ 
+
+C#프로젝트
+
+example94.zip
+5.26MB
+ 
+
+(샘플reqeust)
+
+https://www.koreaexim.go.kr/site/program/financial/exchangeJSON?authkey=인증키&data=AP01
+
+ 
+
+ 
+
+(OPENAPI사이트)
+
+https://www.koreaexim.go.kr/site/program/openapi/openApiView?menuid=001003002002001&apino=2&viewtype=C (공공데이터포털)
+
+https://www.data.go.kr/index.do

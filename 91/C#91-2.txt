@@ -1,0 +1,86 @@
+/*
+  C#예제 91-2 사물인터넷보드(wemos d1r1)를 웹서버로 동작시킨다음
+  C#윈폼에서 post방식으로 보낸 값을 수신하는 기본 예제!
+  윈폼에서 서보모터의 각도를 post방식으로 제어하기 위한 예제!
+ */
+
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
+#include <Servo.h>
+
+#define servo_pin D3
+
+#ifndef STASSID
+#define STASSID "~~~~" //WiFi 공유기의 ID
+#define STAPSK  "~~~~" //WiFi 공유기의 PW
+#endif
+
+const char* ssid     = STASSID;
+const char* password = STAPSK;
+
+ESP8266WebServer server(80);
+Servo myservo;
+const int led = LED_BUILTIN;
+
+void handleRoot() {
+  if(server.argName(0) == "servo"){
+    int degree = server.arg(0).toInt();
+    myservo.write(degree);
+  }
+
+  server.send(200, "text/plain", "OK");
+}
+
+
+void handleNotFound() {
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+}
+
+void setup(void) {
+  pinMode(led, OUTPUT);
+  digitalWrite(led, 0);
+  Serial.begin(115200);
+  myservo.attach(servo_pin);
+  myservo.write(0);
+  
+  WiFi.begin(ssid, password);
+  Serial.println("");
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  if (MDNS.begin("esp8266")) {
+    Serial.println("MDNS responder started");
+  }
+
+  server.on("/", handleRoot);
+  server.onNotFound(handleNotFound);
+
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop(void) {
+  server.handleClient();
+}

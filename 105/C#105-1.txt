@@ -1,0 +1,136 @@
+/*
+ C#105-1 사물인터넷보드(wemos d1r1)에 FND모듈인 TM1637을 2개 연결했다!
+ 첫번째 TM1637은 CLK를 D3에 DIO를 D4에 연결했다!
+ 두번째 TM1637은 CLK를 D5에 DIO를 D6에 연결했다!
+ C#윈폼을 MQTT클라이언트로 세팅하고 발행한 숫자를 이용해서 TM1637에 개별적으로 값을 띄워라!
+*/
+
+#include <ESP8266WiFi.h>
+#include <PubSubClient.h>
+#include <Arduino.h>
+#include <TM1637Display.h>
+
+#define CLK1 D3
+#define DIO1 D4
+#define CLK2 D5
+#define DIO2 D6
+// Update these with values suitable for your network.
+
+const char* ssid = "~~~~";
+const char* password = "~~~~";
+const char* mqtt_server = "broker.mqtt-dashboard.com";
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+unsigned long lastMsg = 0;
+#define MSG_BUFFER_SIZE  (50)
+char msg[MSG_BUFFER_SIZE];
+int value = 0;
+
+
+TM1637Display FND1(CLK1, DIO1);
+TM1637Display FND2(CLK2, DIO2);
+
+void setup_wifi() {
+
+  delay(10);
+  // We start by connecting to a WiFi network
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  randomSeed(micros());
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  String payload2;
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+    payload2 += (char)payload[i];
+  }
+  Serial.println();
+  //1000   1 0 0 0
+  String topic2 = topic; 
+  int number = payload2.toInt();
+
+  if(topic2 == "nockanda/fnd1"){
+    //FND에 숫자를 띄우자!
+    FND1.showNumberDec(number, false);
+  }
+  if(topic2 == "nockanda/fnd2"){
+    //FND에 숫자를 띄우자!
+    FND2.showNumberDec(number, false);
+  }
+
+}
+
+void reconnect() {
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Create a random client ID
+    String clientId = "ESP8266Client-";
+    clientId += String(random(0xffff), HEX);
+    // Attempt to connect
+    if (client.connect(clientId.c_str())) {
+      Serial.println("connected");
+      // Once connected, publish an announcement...
+      client.publish("outNOCK", "hello world");
+      // ... and resubscribe
+      client.subscribe("nockanda/fnd1");
+      client.subscribe("nockanda/fnd2");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
+}
+
+void setup() {
+  pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  Serial.begin(115200);
+  FND1.setBrightness(0x0f); //밝기설정
+  FND2.setBrightness(0x0f); //밝기설정
+  FND1.showNumberDec(0, false);
+  FND2.showNumberDec(0, false);
+  setup_wifi();
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
+}
+
+void loop() {
+
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
+
+  unsigned long now = millis();
+  if (now - lastMsg > 2000) {
+    lastMsg = now;
+    ++value;
+    snprintf (msg, MSG_BUFFER_SIZE, "hello world #%ld", value);
+    Serial.print("Publish message: ");
+    Serial.println(msg);
+    client.publish("outNOCK", msg);
+  }
+}

@@ -1,0 +1,88 @@
+/*
+   C#예제 99-1 
+   사물인터넷보드(wemos d1r1)에 D3에 릴레이를 연결했다
+   C#윈폼에서 날라오는 On/Off 신호에 맞춰서 DC모터를 제어해보자!
+*/
+
+#include <ESP8266WiFi.h>
+
+#ifndef STASSID
+#define STASSID "~~~~" //WiFi 공유기의 ID
+#define STAPSK  "~~~~" //WiFi 공유기의 PW
+#endif
+
+#define relay D3
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+WiFiServer server(80);
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(relay,OUTPUT);
+  
+  // prepare LED
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, 0);
+
+  // Connect to WiFi network
+  Serial.println();
+  Serial.println();
+  Serial.print(F("Connecting to "));
+  Serial.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(F("."));
+  }
+  Serial.println();
+  Serial.println(F("WiFi connected"));
+
+  // Start the server
+  server.begin();
+  Serial.println(F("Server started"));
+
+  // Print the IP address
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  // Check if a client has connected
+  WiFiClient client = server.available();
+  if (!client) {
+    return;
+  }
+  Serial.println(F("new client"));
+
+  client.setTimeout(5000); // default is 1000
+  
+  // Read the first line of the request
+  String req = client.readStringUntil('\r');
+  Serial.println(F("request: "));
+  Serial.println(req);
+
+  //웹서버가 수신한 메시지중에 /ON이라는 패턴이 있으면 릴레이를 ON하고
+  ///OFF라는 패턴이 있으면 릴레이를 OFF하겠다!
+  if(req.indexOf("/ON") != -1){
+    //릴레이를 ON
+    digitalWrite(relay,HIGH);
+  }else if(req.indexOf("/OFF") != -1){
+    //릴레이를 OFF
+    digitalWrite(relay,LOW);
+  }
+
+
+  while (client.available()) {
+    client.read();
+  }
+
+  //response send
+  client.print(F("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"));
+  client.print("OK");
+
+  Serial.println(F("Disconnecting from client"));
+}

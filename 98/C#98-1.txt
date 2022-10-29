@@ -1,0 +1,95 @@
+/*
+   C#예제 98-1 
+   사물인터넷보드(wemos d1r1)에 이산화탄소센서를 D3,D4에 연결했다!
+   C#윈폼에서 request하면 사물인터넷보드에서 response할때
+   이산화탄소센서의 값과 온도값을 전송할 수 있도록 해보자!
+*/
+
+#include <ESP8266WiFi.h>
+#include <SoftwareSerial.h>
+#include <MHZ19.h>
+
+SoftwareSerial ss(D3,D4); //RX TX
+MHZ19 mhz(&ss);
+
+#ifndef STASSID
+#define STASSID "~~~~~~" //WiFi 공유기의 ID
+#define STAPSK  "~~~~~~" //WiFi 공유기의 PW
+#endif
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+WiFiServer server(80);
+
+void setup() {
+  Serial.begin(115200);
+  ss.begin(9600); //이산화탄소센서
+  
+  // prepare LED
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, 0);
+
+  // Connect to WiFi network
+  Serial.println();
+  Serial.println();
+  Serial.print(F("Connecting to "));
+  Serial.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(F("."));
+  }
+  Serial.println();
+  Serial.println(F("WiFi connected"));
+
+  // Start the server
+  server.begin();
+  Serial.println(F("Server started"));
+
+  // Print the IP address
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  // Check if a client has connected
+  WiFiClient client = server.available();
+  if (!client) {
+    return;
+  }
+  Serial.println(F("new client"));
+
+  client.setTimeout(5000); // default is 1000
+
+  // Read the first line of the request
+  String req = client.readStringUntil('\r');
+  Serial.println(F("request: "));
+  Serial.println(req);
+
+
+
+  while (client.available()) {
+    client.read();
+  }
+
+  //데이터측정
+  String output;
+  MHZ19_RESULT response = mhz.retrieveData();
+  if (response == MHZ19_RESULT_OK)
+  {
+    output = String(mhz.getCO2()) + "/" + String(mhz.getTemperature());
+  }
+  else
+  {
+    Serial.print(F("Error, code: "));
+    output =  "Err/Err";
+  }
+  
+  client.print(F("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"));
+  client.print(output);
+
+  Serial.println(F("Disconnecting from client"));
+}

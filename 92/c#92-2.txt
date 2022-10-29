@@ -1,0 +1,160 @@
+/*
+  C#예제 92-2 사물인터넷보드(wemos d1r1)를 웹서버로 동작시킨다음
+  C#윈폼에서 post방식으로 보낸 값을 수신하는 기본 예제!
+  post방식으로 스탭모터를 제어하기 위한 예제!
+ */
+
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
+
+#define IN1 D6
+#define IN2 D5
+#define IN3 D4
+#define IN4 D3
+
+#ifndef STASSID
+#define STASSID "~~~~" //WiFi 공유기의 ID
+#define STAPSK  "~~~~" //WiFi 공유기의 PW
+#endif
+
+const char* ssid     = STASSID;
+const char* password = STAPSK;
+
+byte motor_pin_1 = IN4; //IN4
+byte motor_pin_2 = IN2; //IN2
+byte motor_pin_3 = IN3; //IN3
+byte motor_pin_4 = IN1; //IN1
+int step_number = 0;    
+ bool direct = 0;     
+ long number_of_steps = 2048; 
+ int step_delay = 5;
+ 
+ESP8266WebServer server(80);
+
+const int led = LED_BUILTIN;
+
+void handleRoot() {
+  //C#에서 보낸 스탭수를 여기다가 찍어보자!
+  //post 방식으로!
+  //Serial.println(server.argName(0));
+  //Serial.println(server.arg(0));
+  
+  server.send(200, "text/html", "OK");
+  nockanda_step(server.arg(0).toInt());
+}
+
+
+void handleNotFound() {
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+}
+
+void setup(void) {
+  pinMode(led, OUTPUT);
+  digitalWrite(led, 0);
+  Serial.begin(115200);
+  pinMode(motor_pin_1,OUTPUT);
+  pinMode(motor_pin_2,OUTPUT);
+  pinMode(motor_pin_3,OUTPUT);
+  pinMode(motor_pin_4,OUTPUT);
+  WiFi.begin(ssid, password);
+  Serial.println("");
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  if (MDNS.begin("esp8266")) {
+    Serial.println("MDNS responder started");
+  }
+
+  server.on("/", handleRoot);
+  server.onNotFound(handleNotFound);
+
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop(void) {
+  server.handleClient();
+}
+
+void nockanda_step(int steps_to_move)
+{
+  int steps_left = abs(steps_to_move);  // how many steps to take
+
+  // determine direction based on whether steps_to_mode is + or -:
+  if (steps_to_move > 0) { direct = 1; }
+  if (steps_to_move < 0) { direct = 0; }
+
+
+  // decrement the number of steps, moving one step each time:
+  while (steps_left > 0)
+  {
+
+      if (direct == 1)
+      {
+        step_number++;
+        if (step_number == number_of_steps) {
+          step_number = 0;
+        }
+      }
+      else
+      {
+        if (step_number == 0) {
+          step_number = number_of_steps;
+        }
+        step_number--;
+      }
+      steps_left--;
+
+     switch (step_number % 4) {
+      case 0:  // 1010
+        digitalWrite(motor_pin_1, HIGH);
+        digitalWrite(motor_pin_2, LOW);
+        digitalWrite(motor_pin_3, HIGH);
+        digitalWrite(motor_pin_4, LOW);
+      break;
+      case 1:  // 0110
+        digitalWrite(motor_pin_1, LOW);
+        digitalWrite(motor_pin_2, HIGH);
+        digitalWrite(motor_pin_3, HIGH);
+        digitalWrite(motor_pin_4, LOW);
+      break;
+      case 2:  //0101
+        digitalWrite(motor_pin_1, LOW);
+        digitalWrite(motor_pin_2, HIGH);
+        digitalWrite(motor_pin_3, LOW);
+        digitalWrite(motor_pin_4, HIGH);
+      break;
+      case 3:  //1001
+        digitalWrite(motor_pin_1, HIGH);
+        digitalWrite(motor_pin_2, LOW);
+        digitalWrite(motor_pin_3, LOW);
+        digitalWrite(motor_pin_4, HIGH);
+      break;
+    }
+    //쉬는시간이 어느정도 있어야 하더라~
+    delay(step_delay); //5ms정도 쉬어라~
+  }
+  
+}

@@ -1,0 +1,114 @@
+/*
+  C#예제 101-1
+  사물인터넷보드(wemos d1r1)에 D3에 홀센서를 연결했고,
+  D4에 모스펫(IRF52)을 연결했다!
+  C#윈폼에서 DC모터에 대한 PWM값을 request하면 DC모터를 작동시키고,
+  이때 측정된 RPM값을 response하시오!
+ */
+
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
+
+#ifndef STASSID
+#define STASSID "~~~~" //WiFi 공유기의 ID
+#define STAPSK  "~~~~" //WiFi 공유기의 PW
+#endif
+
+#define hallsensor D3
+#define mosfet D4
+
+const char* ssid     = STASSID;
+const char* password = STAPSK;
+
+ESP8266WebServer server(80);
+
+const int led = LED_BUILTIN;
+
+volatile int count = 0;
+unsigned long t = 0;
+int nockanda_rpm = 0;
+
+void handleRoot() {
+  //request
+  //request가지고 뭘할까?
+  //생략
+  for(int i = 0;i<server.args()-1;i++){
+    if(server.argName(i) == "MOTOR"){
+      Serial.println("DC모터를 작동시켜야겠다..!");
+      Serial.println(server.arg(i));
+      analogWrite(mosfet,server.arg(i).toInt());
+      //response
+      server.send(200, "text/html", "OK");
+    }else if(server.argName(i) == "RPM"){
+      Serial.println("RPM을 측정해야겠다..!");
+      //nockanda_rpm
+      //response
+      server.send(200, "text/html", String(nockanda_rpm));
+    }
+  }
+}
+
+
+void handleNotFound() {
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+}
+
+void setup(void) {
+  pinMode(led, OUTPUT);
+  digitalWrite(led, 0);
+  Serial.begin(115200);
+  pinMode(hallsensor,INPUT);
+  attachInterrupt(digitalPinToInterrupt(hallsensor), rpm, FALLING);
+  
+  WiFi.begin(ssid, password);
+  Serial.println("");
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  if (MDNS.begin("esp8266")) {
+    Serial.println("MDNS responder started");
+  }
+
+  server.on("/", handleRoot);
+  server.onNotFound(handleNotFound);
+
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop(void) {
+  unsigned long t2 = millis();
+  if(t2-t > 1000){
+    t = t2;
+    //Serial.print(count*60); Serial.println(" RPM");
+    nockanda_rpm = count*60;
+    count = 0;
+  }
+  server.handleClient();
+}
+
+ICACHE_RAM_ATTR void rpm() {
+  count++;
+}

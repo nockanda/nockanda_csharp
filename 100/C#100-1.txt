@@ -1,0 +1,116 @@
+/*
+  C#예제 100-1
+  사물인터넷보드(wemos d1r1)에 D3에 워터플로우센서를 연결했다!
+  그리고 D4에 릴레이를 이용해서 워터펌프를 제어할 수 있도록 했다!
+  C#윈폼에서 POST방식으로 넘어오는 값을 이용해서 워터펌프를 제어하고,
+  이때 유량센서로 측정한 값을 C#윈폼으로 response 해주자!
+ */
+
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
+
+#ifndef STASSID
+#define STASSID "~~~~" //WiFi 공유기의 ID
+#define STAPSK  "~~~~" //WiFi 공유기의 PW
+#endif
+
+#define flowsensor D3
+#define pump D4
+
+volatile double water = 0;
+
+const char* ssid     = STASSID;
+const char* password = STAPSK;
+
+ESP8266WebServer server(80);
+
+const int led = LED_BUILTIN;
+
+void handleRoot() {
+  //request(클라이언트->서버) 요청
+  for(int i = 0;i<server.args()-1;i++){
+    Serial.print(server.argName(i));
+    Serial.print(":");
+    Serial.println(server.arg(i));
+    if(server.argName(i) == "PUMP"){
+      if(server.arg(i) == "ON"){
+        Serial.println("워터펌프를 작동시키겠다..!");
+        digitalWrite(pump,HIGH);
+        //response(서버->클라이언트) 응답
+        server.send(200, "text/html", "ON");
+      }else if(server.arg(i) == "OFF"){
+        Serial.println("워터펌프를 멈추겠다..!");
+        digitalWrite(pump,LOW);
+        //response(서버->클라이언트) 응답
+        server.send(200, "text/html", "OFF");
+      }
+    }else if(server.argName(i) == "FLOW"){
+       server.send(200, "text/html", String(water));
+    }else if(server.argName(i) == "CLEAR"){
+      water = 0;
+      server.send(200, "text/html", "OK");
+    }
+  }
+
+  
+}
+
+
+void handleNotFound() {
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+}
+
+void setup(void) {
+  pinMode(led, OUTPUT);
+  digitalWrite(led, 0);
+  Serial.begin(115200);
+  pinMode(pump,OUTPUT);
+  pinMode(flowsensor,INPUT);
+
+  attachInterrupt(digitalPinToInterrupt(flowsensor), flow, FALLING);
+  
+  WiFi.begin(ssid, password);
+  Serial.println("");
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  if (MDNS.begin("esp8266")) {
+    Serial.println("MDNS responder started");
+  }
+
+  server.on("/", handleRoot);
+  server.onNotFound(handleNotFound);
+
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop(void) {
+  server.handleClient();
+}
+
+ICACHE_RAM_ATTR void flow(){
+  water += (1/5888.0)*1000; //단위mL
+}

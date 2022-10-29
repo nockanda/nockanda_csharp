@@ -1,0 +1,88 @@
+/*
+  C#예제 88-2 사물인터넷보드(wemos d1r1)를 웹서버로 동작시킨다음
+  C#윈폼에서 post방식으로 보낸 값을 수신하는 기본 예제!
+  윈폼에서 날린 값을 이용해서 내장 LED를 on/off시키는 예제
+  //led, on 이라고 날라오면 LED ON
+  //led, off라고 날라오면 LED OFF
+ */
+
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
+
+#ifndef STASSID
+#define STASSID "~~~~" //WiFi 공유기의 ID
+#define STAPSK  "~~~~" //WiFi 공유기의 PW
+#endif
+
+const char* ssid     = STASSID;
+const char* password = STAPSK;
+
+ESP8266WebServer server(80);
+
+const int led = LED_BUILTIN;
+
+void handleRoot() {
+  if(server.argName(0) == "LED"){
+    if(server.arg(0) == "ON"){
+      //LED를 켠다!
+      Serial.println("LED가 켜진다..!");
+      digitalWrite(led, LOW);
+    }else if(server.arg(0) == "OFF"){
+      //LED를 끈다!
+      Serial.println("LED가 꺼진다..!");
+      digitalWrite(led, HIGH);
+    }
+  }
+  server.send(200, "text/html", "OK");
+}
+
+
+void handleNotFound() {
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+}
+
+void setup(void) {
+  pinMode(led, OUTPUT);
+  digitalWrite(led, 0);
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  Serial.println("");
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  if (MDNS.begin("esp8266")) {
+    Serial.println("MDNS responder started");
+  }
+
+  server.on("/", handleRoot);
+  server.onNotFound(handleNotFound);
+
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop(void) {
+  server.handleClient();
+}

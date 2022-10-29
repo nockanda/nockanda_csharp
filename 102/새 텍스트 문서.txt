@@ -1,0 +1,47 @@
+[C#윈폼102] (OPENAPI)국토교통부 실시간 버스도착정보 C#윈폼에 리스트뷰로 출력해보기!(#5)(녹칸다/포로리야공대가자)
+
+(OPENAPI)국토교통부 실시간 버스도착정보 C#윈폼에 리스트뷰로 출력해보기!(#5)
+-녹칸다의 openapi C# 프로젝트이다!(녹칸다/포로리야공대가자)
+-국토교통부에서 실시간으로 제공하는 API 서비스이다!
+-전국의 버스도착 정보를 실시간으로 제공하는 openapi이다!
+-이번 open api는 사용하기가 조금 까다롭다!(유저가 알아내야 하는 추가정보가 좀 있다!)
+-응답받는 데이터에는 아래와 같은 정보가 포함되어있다!
+-정류소ID,정류소명,노선ID,노선번호,노선유형,도착예정버스 남은 정류장 수,도착예정버스 차량유형,도착예정버스 도착예상시간[초]
+-C#윈폼 어플리케이션을 웹클라이언트로 동작하도록하고 openapi restful server에 get방식으로 request해서 결과를 response받은 다음 xml데이터를 파싱해보자!
+-그리고 데이터영역을 확보한다음 C#윈폼의 리스트뷰를 이용해서 출력해보자!
+-open api를 이용하기 위해서는 private key가 필요한데 어떻게 발급하는지 살펴보자!(api 케바케로 등록)
+-OPENAPI는 xml이나 json으로 결과를 response받을 수 있는데 xml은 기본라이브러리를 활용하면되고 json은 별도로 설치를 해야 활용가능하므로 xml을 기본으로 활용해보자!
+-xml과 json은 트리구조이다!
+c#의 xml parser를 이용해서 dataset이 포함된 parent -node를 xml node로 지정한다음 child node를 불러내서 활용하면 될듯하다~!
+-아두이노에서 진행하는 OPENAPI는 늘 메모리 이슈가 있었는데 C#윈폼은 메모리가 매우 널널하므로 그러한 걱정은 할 필요가 없다!
+-크게 웹클라이언트로 동작하게 하는 부분, 받아온 결과를 xml로 처리하는부분, 데이터를 리스트뷰에 집어넣는 부분 3개로 분할해서 순차적으로 진행해본다!
+
+ 
+
+(샘플reqeust)
+
+http://openapi.tago.go.kr/openapi/service/ArvlInfoInqireService/getSttnAcctoArvlPrearngeInfoList?serviceKey=서비스키&cityCode=23&nodeId=ICB166000378
+
+ 
+
+버스지역코드
+
+버스조회서비스가능지역.xml
+0.01MB
+C#프로젝트
+
+example102.zip
+0.04MB
+ 
+
+(버스정류장정보)
+
+https://www.data.go.kr/data/15067528/fileData.do
+
+(OPENAPI사이트)
+
+https://www.data.go.kr/data/15000757/openapi.do
+
+(공공데이터포털)
+
+https://www.data.go.kr/index.do

@@ -1,0 +1,100 @@
+/*
+  C#예제 89-2 사물인터넷보드(wemos d1r1)를 웹서버로 동작시킨다음
+  C#윈폼에서 post방식으로 보낸 값을 수신하는 기본 예제!
+  윈폼에서 post방식으로 숫자 2세트를 날리면 FND모듈 2개를 동시에 제어해보자!
+  fnd1, 123
+  fnd2, -99
+ */
+
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
+#include <Arduino.h>
+#include <TM1637Display.h>
+
+#define CLK1 D3
+#define DIO1 D4
+#define CLK2 D5
+#define DIO2 D6
+
+#ifndef STASSID
+#define STASSID "~~~~" //WiFi 공유기의 ID
+#define STAPSK  "~~~~" //WiFi 공유기의 PW
+#endif
+
+const char* ssid     = STASSID;
+const char* password = STAPSK;
+
+ESP8266WebServer server(80);
+TM1637Display display1(CLK1, DIO1);
+TM1637Display display2(CLK2, DIO2);
+
+const int led = LED_BUILTIN;
+
+void handleRoot() {
+  for(int i =0;i<server.args()-1;i++){
+    if(server.argName(i) == "fnd1"){
+      int num = server.arg(i).toInt();
+      display1.showNumberDec(num, false);
+    }else if(server.argName(i) == "fnd2"){
+      int num = server.arg(i).toInt();
+      display2.showNumberDec(num, false);
+    }
+  }
+  server.send(200, "text/html", "OK");
+}
+
+
+void handleNotFound() {
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  for (uint8_t i = 0; i < server.args(); i++) {
+    message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
+  }
+  server.send(404, "text/plain", message);
+}
+
+void setup(void) {
+  pinMode(led, OUTPUT);
+  digitalWrite(led, 0);
+  Serial.begin(115200);
+  display1.setBrightness(0x0f);
+  display2.setBrightness(0x0f);
+  display1.showNumberDec(0, false);
+  display2.showNumberDec(0, false);
+  
+  WiFi.begin(ssid, password);
+  Serial.println("");
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  if (MDNS.begin("esp8266")) {
+    Serial.println("MDNS responder started");
+  }
+
+  server.on("/", handleRoot);
+  server.onNotFound(handleNotFound);
+
+  server.begin();
+  Serial.println("HTTP server started");
+}
+
+void loop(void) {
+  server.handleClient();
+}

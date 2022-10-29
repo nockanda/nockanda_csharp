@@ -1,0 +1,108 @@
+/*
+   C#예제 89-1 사물인터넷보드(wemos d1r1)을 웹서버로 동작시킨다음
+   C#윈폼에서 GET방식으로 제어하기위한 녹칸다의 기본코드!
+   동작예시) 
+   /fnd1/0000/
+   /fnd2/9999/
+*/
+
+#include <ESP8266WiFi.h>
+#include <Arduino.h>
+#include <TM1637Display.h>
+
+#define CLK1 D3
+#define DIO1 D4
+#define CLK2 D5
+#define DIO2 D6
+
+#ifndef STASSID
+#define STASSID "~~~~" //WiFi 공유기의 ID
+#define STAPSK  "~~~~" //WiFi 공유기의 PW
+#endif
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+WiFiServer server(80);
+
+TM1637Display display1(CLK1, DIO1);
+TM1637Display display2(CLK2, DIO2);
+
+void setup() {
+  Serial.begin(115200);
+  display1.setBrightness(0x0f);
+  display2.setBrightness(0x0f);
+  display1.showNumberDec(0, false);
+  display2.showNumberDec(0, false);
+  // prepare LED
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, 0);
+
+  // Connect to WiFi network
+  Serial.println();
+  Serial.println();
+  Serial.print(F("Connecting to "));
+  Serial.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(F("."));
+  }
+  Serial.println();
+  Serial.println(F("WiFi connected"));
+
+  // Start the server
+  server.begin();
+  Serial.println(F("Server started"));
+
+  // Print the IP address
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  // Check if a client has connected
+  WiFiClient client = server.available();
+  if (!client) {
+    return;
+  }
+  Serial.println(F("new client"));
+
+  client.setTimeout(5000); // default is 1000
+
+  // Read the first line of the request
+  String req = client.readStringUntil('\r');
+  Serial.println(F("request: "));
+  Serial.println(req);
+
+  
+  /*
+  GET /fnd1/-99 HTTP/1.1
+
+  */
+  
+  if(req.indexOf("/fnd1/") != -1){
+    //fnd1에 대한 request
+    int num = req.substring(req.indexOf("/fnd1/")+6,req.indexOf(" HTTP")).toInt();
+    Serial.print("FND1=");
+    Serial.println(num);
+    display1.showNumberDec(num, false);
+  }else if(req.indexOf("/fnd2/") != -1){
+    //fnd2에 대한 request
+    int num = req.substring(req.indexOf("/fnd2/")+6,req.indexOf(" HTTP")).toInt();
+    Serial.print("FND2=");
+    Serial.println(num);
+    display2.showNumberDec(num, false);
+  }
+
+
+  while (client.available()) {
+    client.read();
+  }
+  client.print(F("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"));
+  client.print("OK");
+
+  Serial.println(F("Disconnecting from client"));
+}

@@ -1,0 +1,85 @@
+/*
+   C#예제 81-1 사물인터넷보드(wemos d1r1)을 웹서버로 동작시킨다음
+   C#윈폼에서 GET방식으로 제어하기위한 녹칸다의 기본코드!
+   C#윈폼에서 사물인터넷보드(wemos d1r1)에 연결된 서보모터를 GET방식으로 제어하기 위한 코드!
+*/
+
+#include <ESP8266WiFi.h>
+#include <Servo.h>
+
+#ifndef STASSID
+#define STASSID "~~~~" //WiFi 공유기의 ID
+#define STAPSK  "~~~~" //WiFi 공유기의 PW
+#endif
+
+#define servo_pin D3
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+WiFiServer server(80);
+Servo myservo;
+
+void setup() {
+  Serial.begin(115200);
+  myservo.attach(servo_pin);
+  myservo.write(0);
+  
+  // prepare LED
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, 0);
+
+  // Connect to WiFi network
+  Serial.println();
+  Serial.println();
+  Serial.print(F("Connecting to "));
+  Serial.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(F("."));
+  }
+  Serial.println();
+  Serial.println(F("WiFi connected"));
+
+  // Start the server
+  server.begin();
+  Serial.println(F("Server started"));
+
+  // Print the IP address
+  Serial.println(WiFi.localIP());
+}
+
+void loop() {
+  // Check if a client has connected
+  WiFiClient client = server.available();
+  if (!client) {
+    return;
+  }
+  Serial.println(F("new client"));
+
+  client.setTimeout(5000); // default is 1000
+
+  // Read the first line of the request
+  String req = client.readStringUntil('\r');
+  Serial.println(F("request: "));
+  //GET /94 HTTP/1.1
+  //0123456789012345
+  Serial.println(req);
+  int s = req.indexOf("GET /")+5;
+  int e = req.indexOf(" HTTP");
+  String data = req.substring(s,e);
+  int degree = data.toInt();
+  myservo.write(degree); 
+
+  while (client.available()) {
+    client.read();
+  }
+  client.print(F("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"));
+  client.print("OK");
+
+  Serial.println(F("Disconnecting from client"));
+}
