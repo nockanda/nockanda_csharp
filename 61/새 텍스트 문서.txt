@@ -1,0 +1,21 @@
+[C#윈폼강의] 포로리야 공대가자 #61 시리얼포트 40편 feat. 아두이노/지문인식센서/FPM10A
+
+(시리얼포트 40편 feat. 아두이노/지문인식센서/FPM10A)
+지문으로 가벼운 인증을 윈폼으로 해보자!
+지문에 해당하는 기초적인 사용자 정보를 저장하고 띄워보기
+(아두이노에서 지문 raw image 받아오는 예제에 성공했다면 아래 진행)
+지문모듈에 리딩한 지문을 이미지로 띄워보기
+
+
+C#61-1.txt
+0.00MB
+example61.zip
+0.11MB
+
+C#예제61-1 지문ID를 윈폼으로 보내는 코드
+
+ 
+
+관련라이브러리(finger print)
+
+https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library

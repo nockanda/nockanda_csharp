@@ -1,0 +1,68 @@
+/*
+ * C#예제41-1
+ * 윈폼에서 2바이트로 이송해야할 물의 양이 날라오면
+ * 그대로 워터펌프로 옮기면 끝!
+ * 윈폼에서 수신한 바이트 첫번쨰 값이
+ * 0이면 토양센서값을 읽어서 보내면 끝!
+ * 2면 워터펌프 작동하라는 뜻!
+ * 토양센서는 A0에 연결
+ * 워터펌프는 모스펫에 연결해서 D2에 연결
+ * 유속센서는 D3에 연결!
+ */
+const byte interruptPin = 3;
+volatile float pulse = 0;
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(2,OUTPUT); //모스펫은 출력으로 작동
+  pinMode(3,INPUT); //유속센서는 입력으로 작동
+  attachInterrupt(digitalPinToInterrupt(interruptPin), water, FALLING);
+}
+byte recv[3];
+byte send_data[3];
+int water_limit = 0;
+bool is_pump_busy = false;
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //윈폼에서 아두이노쪽에 뭔가 보낸 값이 있다면~
+    Serial.readBytes(recv,3);//3바이트 수신
+    //2 0 100
+    if(recv[0] == 0){
+      //토양센서값을 회신하라
+      int value = analogRead(A0);//토양센서값 획득
+      send_data[0] = 0;
+      send_data[1] = value /256;
+      send_data[2] = value %256;
+      Serial.write(send_data,3);
+    }else if(recv[0] == 2){
+      //워터펌프를 작동시켜라
+      pulse = 0;
+      digitalWrite(2,HIGH);//워터펌프 켜라!
+      is_pump_busy = true;
+      water_limit = (recv[1]*256) + recv[2];
+      
+    }
+  }
+  //아두이노 무한루프의 본체
+  //만약 워터펌프가 작동중이면서
+  //유속센서의 측정값이 제한값이내라면 작동
+  
+  if(is_pump_busy && pulse > water_limit){
+    //멈춤신호
+    digitalWrite(2,LOW);//워터펌프 정지
+    //측정값 전송
+    int value = (int)pulse;
+    send_data[0] = 1;
+    send_data[1] = value /256;
+    send_data[2] = value %256;
+    Serial.write(send_data,3);
+    is_pump_busy=false;
+    water_limit=0;
+  }
+}
+
+void water(){
+  //5880펄스 = 1L
+  pulse += 1000/5880.0f; //(mL)
+}

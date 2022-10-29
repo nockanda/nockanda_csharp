@@ -1,0 +1,132 @@
+/*
+ * C#55-1 패스파인더 예제를 C#으로 변경한 예제임
+ * 스탭모터는 {1,2,3,4} = {8,9,10,11} 으로 연결
+ * 부저는 D3에 연결하시오!
+ */
+#include <Stepper.h>
+#define NOTE_C6  1047
+const int stepsPerRevolution = 2048; //제품특성
+                                  //IN4 IN2 IN3 IN1
+Stepper myStepper(stepsPerRevolution, 11, 9, 10, 8);
+
+//2048스탭이 360도에 해당이 된다.
+//최소 이동스탭은 32스탭이다.
+//360도를 64등분해서 움직일 수 있는 스탭모터이다.
+//그때 각도는 5.625도 이다.
+//128스텝씩 움직이면 360도를 16개로 분할할 수 있다.
+//1분할당 22.5도를 움직이게 된다.
+//스탭모터의 시작지점은 무조건 0이다.
+
+void setup() {
+  // put your setup code here, to run once:
+  myStepper.setSpeed(10); //제품특성
+  Serial.begin(9600);
+  for(int i = '0';i<'z';i++){
+    Serial.print(i);
+    Serial.print("=");
+    Serial.println((char)i);
+  }
+}
+int location = 0; //초기 위치는 0
+byte senddata =0;
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //컴퓨터쪽에서 시리얼통신으로 보내는 부분
+    byte recv = Serial.read();
+    if(recv == 0x7E){
+      //물결표
+      //무조건 스탭모터를 0도로 이동
+      //Serial.println("물결표!");
+      myStepper.step(128*location);
+      location=0;
+    }else{
+      //0100 0001
+      int num1 = (recv&0xF0) >>4;
+      int num2 = recv&0x0F;
+
+      
+      // location = num1
+      // num1 - location
+      //num1 : 이동할 위치
+      //location : 현재위치
+      //2 F(15)
+      int step1 = -128*(num1-location);
+      int step2 = 0;
+      if(location < num1){
+        step2 = -128*(16-abs(num1-location))*-1;
+      }else{
+        step2 = -128*(16-abs(num1-location));
+      }
+      //Serial.print("char : ");
+      //Serial.println(num1);
+      if(abs(step1) > abs(step2)){
+        //step2로 결정
+        //Serial.println(step2/-128);
+        senddata = (step2/-128)+16;
+        Serial.write(senddata);
+        myStepper.step(step2);
+      }else{
+        //step1 결정
+        myStepper.step(step1);
+        //Serial.println(step1/-128);
+        senddata = (step1/-128)+16;
+        Serial.write(senddata);
+      }
+      //myStepper.step(step1);
+      
+      location = num1;
+      
+      delay(2000);
+      
+      //비프음시작
+      int noteDuration = 1000 / 4;
+      tone(3, NOTE_C6, noteDuration);
+      int pauseBetweenNotes = noteDuration * 1.30;
+      delay(pauseBetweenNotes);
+      // stop the tone playing:
+      noTone(3);
+      //비프음종료
+      
+      
+      
+      step1 = -128*(num2-location);
+      step2 = 0;
+      if(location < num2){
+        step2 = -128*(16-abs(num2-location))*-1;
+      }else{
+        step2 = -128*(16-abs(num2-location));
+      }
+      //Serial.print("char : ");
+      //Serial.println(num2);
+       if(abs(step1) > abs(step2)){
+        //step2로 결정
+        //Serial.println(step2/-128);
+        senddata = (step2/-128)+16;
+        Serial.write(senddata);
+        myStepper.step(step2);
+      }else{
+        //step1 결정
+        //Serial.println(step1/-128);
+        senddata = (step1/-128)+16;
+        Serial.write(senddata);
+        myStepper.step(step1);
+      }
+      //myStepper.step(step1);
+      
+      location = num2;
+      delay(2000);
+      
+      //비프음시작
+      tone(3, NOTE_C6, noteDuration);
+      delay(pauseBetweenNotes);
+      // stop the tone playing:
+      noTone(3);
+      //비프음종료
+      
+      
+    
+      
+    }
+  }
+}

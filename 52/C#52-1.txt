@@ -1,0 +1,53 @@
+/*
+ * C#예제52-1 (아두이노예제49-2를 참조함)
+ * 
+ */
+
+#define waterpump 3
+#define flowsensor 2
+volatile double water = 0;
+
+unsigned long timer1;
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(waterpump,OUTPUT);
+  attachInterrupt(digitalPinToInterrupt(flowsensor), flow, FALLING);
+  timer1 = millis();
+}
+byte senddata[2];
+void loop() {
+  // put your main code here, to run repeatedly:
+  
+  if(Serial.available()>0){
+    //뭔가 시리얼 데이터 수신값이 있다면~
+    detachInterrupt(digitalPinToInterrupt(flowsensor));
+    
+    byte value = Serial.read();
+    if(value == 0) digitalWrite(waterpump,LOW);
+    else digitalWrite(waterpump,HIGH);
+    
+    attachInterrupt(digitalPinToInterrupt(flowsensor), flow, FALLING);
+  }
+  //1초에 한번 물의양을 점검해보자
+  //mL/s 단위로 전송해보자
+  
+  unsigned long timer2 = millis();
+  if(timer2 - timer1 > 1000){
+    detachInterrupt(digitalPinToInterrupt(flowsensor));
+    //1초 지났네요
+    //Serial.print("water = ");
+    //Serial.println(water);
+    //시리얼 전송하는 부분
+    senddata[0] = ((int)(water*100))/256;
+    senddata[1] = ((int)(water*100))%256;
+    Serial.write(senddata,2);
+    water=0;
+    timer1 = timer2;
+    attachInterrupt(digitalPinToInterrupt(flowsensor), flow, FALLING);
+  }
+}
+
+void flow(){
+  water += (1/5.888); //단위mL
+}

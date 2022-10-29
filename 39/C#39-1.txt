@@ -1,0 +1,42 @@
+/*
+ * C#예제39 홀센서를 D2에 연결해서 USB선풍기의 RPM을 측정하라
+ * 모스펫을 D3(PWM전용핀)에 연결해서 USB선풍기의 풍량을 조절하라
+ * RPM은 윈폼으로 전송하고 2바이트로 보내자
+ * 모스펫제어는 1바이트로 보내자!
+ */
+volatile int count = 0;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(2,INPUT);
+  attachInterrupt(digitalPinToInterrupt(2), rpm, FALLING);
+}
+byte senddata[2];
+unsigned long previousMillis = 0; 
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //수신
+    byte recv = Serial.read();
+    if(recv <0 || recv > 255) return;
+
+    analogWrite(3,recv);
+  }
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= 1000) {
+    // save the last time you blinked the LED
+    previousMillis = currentMillis;
+
+    count = (count/3)*60;
+    senddata[0] = count/256;
+    senddata[1] = count%256;  
+    Serial.write(senddata,2);
+    count=0;
+  }
+  
+}
+
+void rpm(){
+  count++;
+}

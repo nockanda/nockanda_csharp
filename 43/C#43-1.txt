@@ -1,0 +1,74 @@
+/*
+ * C#43-1 윈폼과 모터드라이브를 연동해보자!
+ * 라이브러리 검색하는곳에서 l293d 검색후 첫번째꺼 다운받아서 쓰면 될듯!
+ */
+
+#include <MotorDriver.h>
+#include <Servo.h>
+Servo myservo1;
+Servo myservo2;
+MotorDriver m;
+void setup()
+{
+   Serial.begin(9600);
+   myservo1.attach(9);
+   myservo2.attach(10);
+}
+byte recv[3];
+byte senddata[3];
+byte motorset[6][2] ={
+  {0,1}, //모터1(기본정방향)
+  {0,1}, //모터2(기본정방향)
+  {0,1}, //모터3(기본정방향)
+  {0,1}, //모터4(기본정방향)
+  {0,0}, //서보1
+  {0,0}  //서보2
+};
+void loop()
+{
+  //m.motor(1,FORWARD,255);
+  //m.motor(4,FORWARD,255);  
+  if(Serial.available() > 0){
+    //윈폼에서 뭔가 날라온다면~
+    Serial.readBytes(recv,3);
+    if(recv[0] == 0){
+      //초기화코드 요청
+      for(int i = 0;i<6;i++){
+        senddata[0] = i+1; //모터ID
+        senddata[1] = motorset[i][0];
+        senddata[2] = motorset[i][1];
+        Serial.write(senddata,3);
+        delay(50);
+      }
+    }else if(recv[0] >= 1 && recv[0] <= 4){
+      //1번~4번모터
+      //1 255 0
+      if(recv[2] < 0 || recv[2] > 255) return;
+      m.motor(recv[0],recv[2],recv[1]);
+      motorset[recv[0]-1][0] = recv[1]; //파워
+      motorset[recv[0]-1][1] = recv[2]; //방향
+      senddata[0] = recv[0]; //모터ID
+      senddata[1] = recv[1];
+      senddata[2] = recv[2];
+      Serial.write(senddata,3);
+    }else if(recv[0] == 5){
+      //1번서보제어
+       if(recv[1] < 0 || recv[1] > 180) return;
+       myservo1.write(recv[1]); 
+       motorset[4][0] = recv[1];
+       senddata[0] = recv[0]; //모터ID
+      senddata[1] = recv[1];
+      senddata[2] = recv[2];
+      Serial.write(senddata,3);
+    }else if(recv[0] == 6){
+      //2번서보제어
+      if(recv[1] < 0 || recv[1] > 180) return;
+       myservo2.write(recv[1]);
+       motorset[5][0] = recv[1]; 
+       senddata[0] = recv[0]; //모터ID
+      senddata[1] = recv[1];
+      senddata[2] = recv[2];
+      Serial.write(senddata,3);
+    }
+  }
+}

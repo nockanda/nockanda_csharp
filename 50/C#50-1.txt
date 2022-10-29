@@ -1,0 +1,25 @@
+/*
+ * C#예제50-1 윈폼에서 오는 RGB컬러로
+ * RGB LED의 색을 표현해보자
+ */
+#define red 3
+#define green 5
+#define blue 6
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); //나 시리얼 통신 할거야
+}
+byte recv[3];
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //윈폼에서 뭔가 날린값이 있다면~
+    Serial.readBytes(recv,3);
+    //recv[0] : R/recv[1] :G/recv[2]:B
+    analogWrite(red,recv[0]);
+    analogWrite(green,recv[1]);
+    analogWrite(blue,recv[2]);
+  }
+  //평소에는 아무것도 안함..
+}

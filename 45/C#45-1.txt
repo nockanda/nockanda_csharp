@@ -1,0 +1,23 @@
+/*
+ * C#45-1 모스펫을 D3에 연결해서
+ * 윈폼하고 통신을 해보자!
+ * 윈폼에서 0~255값이 날라오면
+ * 그값으로 모스펫을 세팅하고
+ * 다시 윈폼으로 되돌려 보내보자@!
+ */
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available()>0){
+    byte recv = Serial.read();
+    if(recv <0 || recv > 255) return;
+
+    analogWrite(3,recv);
+    Serial.write(recv);
+  }
+}

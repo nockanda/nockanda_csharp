@@ -1,0 +1,81 @@
+/*
+ * C#예제32-1 적외선근접센서(D2)로 근접해있는 물체 치우기
+ * 2축 팬틸트 프레임을 사용했다.
+ * 서보는 아래쪽거 D5에 연결 위쪽꺼 D6에 연결
+ */
+//적외선근접센서
+//가까이오면 low
+#include <Servo.h>
+
+Servo myservo1; 
+Servo myservo2; 
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(2,INPUT);
+  myservo1.attach(5); 
+  myservo2.attach(6); 
+  myservo1.write(90);
+  myservo2.write(0);
+}
+bool pre_state = HIGH;
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //윈폼에서 날라오는값이 있으면~
+    byte recv = Serial.read();
+    if(recv == 0){
+      //오른쪽-왼쪽
+      myservo1.write(90);
+      myservo2.write(0);
+      delay(2000);
+      //
+      myservo1.write(160);
+      myservo2.write(60);
+      delay(2000);
+      //
+      myservo1.write(20);
+      delay(2000);
+      //
+      myservo1.write(90);
+      myservo2.write(0);
+      delay(2000);
+      
+    }else{
+      //왼쪽-오른쪽
+      myservo1.write(90);
+      myservo2.write(0);
+       delay(2000);
+      //
+      myservo1.write(20);
+       myservo2.write(60);
+      delay(2000);
+      //
+      myservo1.write(160);
+      delay(2000);
+      //
+      myservo1.write(90);
+      myservo2.write(0);
+      delay(2000);
+    }
+    if(digitalRead(2)==LOW){
+        //있는거
+        Serial.write((byte)0);
+      }else{
+        //없는거
+        Serial.write((byte)1);
+      }
+  }
+  bool now_state = digitalRead(2);
+  if(pre_state == HIGH && now_state == LOW){
+    //물체가 갑자기 등장한 경우
+    Serial.write((byte)1);
+  }
+  if(pre_state == LOW && now_state == HIGH){
+    //갑자기 사라진 그순간
+    Serial.write((byte)0);
+  }
+
+  pre_state = now_state;
+  delay(100);
+}

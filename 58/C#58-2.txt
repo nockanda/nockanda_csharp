@@ -1,0 +1,52 @@
+/*
+ * C#예제58-2 윈폼에서 보낸 바이너리 비트맵을
+ * OLED에 멋있게 띄우는 코드
+ */
+
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+
+#define OLED_RESET     4 
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+  display.display();
+  display.clearDisplay();
+}
+byte recv[17];
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    Serial.readBytes(recv,17);
+    if(recv[0] == 0){
+      display.clearDisplay();
+    }
+    //recv[0] == 라인번호
+    //0xFF  11111111
+    //(i*8) + j : 픽셀번호
+    
+    for(int i = 0;i<16;i++){
+      //recv[i+1] = 픽셀
+      for(int j =0;j<8;j++){
+        //0이냐 1이냐를 구분해보자
+        //1만 찾아서 흰색으로 드로잉하면 끝
+        if(((recv[i+1] >> (7-j)) & 0x01) == 1){
+          //j번째 비트가 흰색이라는 뜻일거 같다..
+          display.fillRect((i*8) + j, recv[0], 1, 1, SSD1306_WHITE);
+        }
+      }
+    }
+
+    display.display();
+    Serial.write((byte)0);
+  }
+}

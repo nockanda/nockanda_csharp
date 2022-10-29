@@ -1,0 +1,46 @@
+/*
+ * C#47-1 자이로센서의 정보를 활용해서
+ * 비행기의 자세를 표현한 예제
+ */
+
+#include "Wire.h"
+#include <MPU6050_light.h>
+
+MPU6050 mpu(Wire);
+unsigned long timer = 0;
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+  mpu.begin();
+  //Serial.println(F("Calculating gyro offset, do not move MPU6050"));
+  delay(1000);
+  mpu.calcGyroOffsets();
+  //Serial.println("Done!\n");
+}
+bool ask = false;
+byte senddata[6];
+void loop() {
+  //if(Serial.available() >0){
+  //  //윈폼에서 뭔가 데이터가 날라오면~
+  //  byte dumydata = Serial.read();
+  //  if(dumydata == 0) ask = false;
+  //}
+   
+  if((millis()-timer)>100){
+    mpu.update();
+    float x = 180+mpu.getAngleX();
+    float y =180+mpu.getAngleY();
+    float z = 180+mpu.getAngleZ();
+    //보냈다?
+    senddata[0] = ((int)(x*100))/256;
+    senddata[1] = ((int)(x*100))%256;
+    senddata[2] = ((int)(y*100))/256;
+    senddata[3] = ((int)(y*100))%256;
+    senddata[4] = ((int)(z*100))/256;
+    senddata[5] = ((int)(z*100))%256;
+    
+    Serial.write(senddata,6);
+    timer = millis();
+  }
+}

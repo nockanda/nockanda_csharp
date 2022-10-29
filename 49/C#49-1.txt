@@ -1,0 +1,76 @@
+/*
+ * C#예제49-1 솔레노이드를 주인공으로해서
+ * 도어락 원격제어 시스템을 만들어보자!
+ * 준비물은 모스펫과 LED2개 택트스위치2개
+ * 부저1개이다.
+ * 각각 준비물의 연결상태는 아래define과 같다.
+ */
+
+#define mosfet 2
+#define lockbutton 3
+#define openbutton 4
+#define redled 5
+#define greenled 6
+#define buzzer 8
+#define NOTE_D3  147
+
+bool inopened = false; //false면 잠금상태
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);//나 시리얼 통신 할거야
+  pinMode(mosfet,OUTPUT); //모스펫을 출력모드로 하겠다.
+  pinMode(lockbutton,INPUT_PULLUP);
+  pinMode(openbutton,INPUT_PULLUP);
+  pinMode(redled,OUTPUT);
+  pinMode(greenled,OUTPUT);
+  digitalWrite(mosfet,LOW);//초기상태 잠금
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //뭔가 날라온다..
+    byte data = Serial.read();
+    if(data == 0){
+      //잠금신호
+      doorlock();
+    }else if(data == 1){
+      //열림신호
+      dooropen();
+    }else{
+      //더미데이터 잠금열림 확인용
+      Serial.write((byte)inopened);
+    }
+    
+  }
+  
+  if(digitalRead(lockbutton) == LOW){
+    //잠금버튼이 눌러졌다!
+    doorlock();
+  }else if(digitalRead(openbutton) == LOW){
+    //열림버튼이 눌러졌다!
+    dooropen();
+  }
+}
+
+void doorlock(){
+  inopened = false;
+    digitalWrite(mosfet,LOW);
+    digitalWrite(redled,HIGH);
+    digitalWrite(greenled,LOW);
+    tone(buzzer, NOTE_D3);
+    delay(1000);
+    noTone(buzzer);
+    Serial.write((byte)0);
+}
+void dooropen(){
+  inopened = true;
+    digitalWrite(mosfet,HIGH);
+    digitalWrite(redled,LOW);
+    digitalWrite(greenled,HIGH);
+    tone(buzzer, NOTE_D3);
+    delay(1000);
+    noTone(buzzer);
+    Serial.write((byte)1);
+}

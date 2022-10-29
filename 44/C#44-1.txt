@@ -1,0 +1,70 @@
+/*
+ * C#44-1 먼지센서와 온습도센서값을 윈폼으로 보내는 예제
+ */
+#include "DHT.h"
+#define DHTPIN 5 
+#define DHTTYPE DHT11
+int measurePin = A0; //Connect dust sensor to Arduino A0 pin
+int ledPower = 2;   //Connect 3 led driver pins of dust sensor to Arduino D2
+
+int samplingTime = 280;
+int deltaTime = 40;
+int sleepTime = 9680;
+
+ 
+float voMeasured = 0;
+float calcVoltage = 0;
+float dustDensity = 0;
+DHT dht(DHTPIN, DHTTYPE);
+  
+
+void setup(){
+
+  Serial.begin(9600);
+
+  pinMode(ledPower,OUTPUT);
+  dht.begin();
+}
+
+  
+byte senddata[6];
+void loop(){
+
+  digitalWrite(ledPower,LOW); // power on the LED
+
+  delayMicroseconds(samplingTime);
+
+  
+
+  voMeasured = analogRead(measurePin); // read the dust value
+
+  
+
+  delayMicroseconds(deltaTime);
+
+  digitalWrite(ledPower,HIGH); // turn the LED off
+
+  delayMicroseconds(sleepTime);
+
+  
+
+  // 0 - 5V mapped to 0 - 1023 integer values
+
+  // recover voltage
+
+  calcVoltage = voMeasured * (5.0 / 1024.0);
+  // linear eqaution taken from http://www.howmuchsnow.com/arduino/airquality/
+  // Chris Nafis (c) 2012
+
+  dustDensity = 0.17 * calcVoltage - 0.1;
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  senddata[0] = ((int)(t*100))/256;
+  senddata[1] = ((int)(t*100))%256;
+  senddata[2] = ((int)(h*100))/256;
+  senddata[3] = ((int)(h*100))%256;
+  senddata[4] = ((int)(dustDensity*100))/256;
+  senddata[5] = ((int)(dustDensity*100))%256;
+  Serial.write(senddata,6);
+  delay(2000);
+}

@@ -1,0 +1,30 @@
+/*
+ * C#예제38-1 CDS(광전센서)를 A0에 연결해서
+ * 값을 시리얼로 출력해보기!
+ * 레이저모듈을 D2에 연결했다!
+ */
+byte senddata[2];
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  pinMode(2,OUTPUT);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available()>0){
+    byte data = Serial.read();
+    if(data == 0){
+      //레이저끄기
+      digitalWrite(2,LOW);
+    }else{
+      //켜기
+      digitalWrite(2,HIGH);
+    }
+  }
+  int value = analogRead(A0);
+  senddata[0] = value/256;
+  senddata[1] = value%256;
+  Serial.write(senddata,2);
+  delay(10);
+}

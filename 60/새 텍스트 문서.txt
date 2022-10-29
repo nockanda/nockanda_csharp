@@ -1,0 +1,11 @@
+[C#윈폼강의] 포로리야 공대가자 #60 시리얼포트 38편 feat. 아두이노/GY68/BMP180 기압센서
+
+(시리얼포트 38편 feat. 아두이노/GY68/BMP180 기압센서)
+기압센서값 윈폼에 띄워보기!
+기록해서 CSV파일로 저장하기!
+
+ 
+
+관련라이브러리(BMP180)
+
+https://github.com/adafruit/Adafruit-BMP085-Library

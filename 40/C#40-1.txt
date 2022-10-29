@@ -1,0 +1,31 @@
+/*
+ * C#예제40-1 
+ * 윈폼에서 1을보내면 무게값을 응답한다.
+ */
+
+#include "HX711.h"
+
+const int LOADCELL_DOUT_PIN = 3;
+const int LOADCELL_SCK_PIN = 2;
+
+HX711 scale;
+
+float calibration_factor = 10850; //-7050 worked for my 440lb max scale setup
+
+void setup() {
+  Serial.begin(9600);
+  scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
+  scale.set_scale(calibration_factor);
+  scale.tare();
+}
+byte senddata[2];
+void loop() {
+  if(Serial.available()>0){
+    double wieght = scale.get_units()*0.453592;
+    if(wieght < 0) wieght=0;
+
+    senddata[0] = ((int)(wieght*100))/256;
+    senddata[1] = ((int)(wieght*100))%256;
+    Serial.write(senddata,2);
+  }
+}

@@ -1,0 +1,38 @@
+/*
+ * C#예제58-1 윈폼에서 보낸 텍스트를 OLED
+ * 디스플레이에 멋있게 띄우는 예제코드
+ */
+
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+
+#define OLED_RESET     4 
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+  display.display();
+  display.clearDisplay();
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    String data = Serial.readStringUntil('\n');
+        
+    display.clearDisplay();
+    display.setTextSize(2);             // Normal 1:1 pixel scale
+    display.setTextColor(SSD1306_WHITE);        // Draw white text
+    display.setCursor(0,0);             // Start at top-left corner
+    display.println(data);
+    display.display();
+  }
+}

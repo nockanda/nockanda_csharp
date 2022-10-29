@@ -1,0 +1,45 @@
+/*
+ * C#29-1 마그네틱스위치를 D2에 장착해서
+ * 시리얼통신으로 윈폼에 잠금/열림 여부를 보내보자!
+ * 문이 닫혀있으면 0을보내고 열려있으면 1을 보내보자!
+ * 윈폼에서 0을보내면 솔레노이드를 작동시키고 1을보내면 작동을 해제하라!
+ * 솔레노이드(모스펫) D3에 연결했다.
+ * 만약 윈폼에서 2을보내면 아두이노에게 초기상태를 확인해달라는 요청이다.
+ * 아두이노에서 0을 회신하면 잠겨있는 것이고 1을 보내면 열려있는 것이다.
+ */
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(2,INPUT_PULLUP); //마그네틱스위치
+  pinMode(3,OUTPUT);//모스펫
+}
+byte pre_state = 0; //과거
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    byte recv = Serial.read();
+    if(recv == 0){
+      //솔레노이드작동
+      digitalWrite(3,LOW);
+    }else if(recv == 1){
+      //해제
+      digitalWrite(3,HIGH);
+    }else if(recv == 2){
+      Serial.write(digitalRead(2));
+    }
+  }
+  byte state = digitalRead(2); //현재
+  if(pre_state == HIGH && state == LOW){
+   //문이 열려있다가 닫힌경우 
+   Serial.write(0);
+  }
+  if(pre_state == LOW && state == HIGH){
+   //닫혀있다가 열린경우
+   Serial.write(1);
+  }
+
+  pre_state = state;
+  delay(100);
+}

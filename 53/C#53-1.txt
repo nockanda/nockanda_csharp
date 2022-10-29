@@ -1,0 +1,111 @@
+/*
+ * 예제 C#53-1(아두이노 77-1예제를 참조함)
+ * 시리얼통신으로 입력되는 문자를 그대로
+ * 모스부호로 표현하라
+ * D3에 부저를 연결해서 윈폼에서 보내는
+ * 텍스트를 모르스부호로 표현해보자!
+ */
+
+#define UTIME 200
+#define NOTE_C4  262
+//점* 선-
+String morsecode[]=
+{
+  "-----",//0
+  "*----",//1
+  "**---",//2
+  "***--",//3
+  "****-",//4
+  "*****",//5
+  "-****",//6
+  "--***",//7
+  "---**",//8
+  "----*",//9
+  "", //:
+  "", //;
+  "", //<
+  "", //=
+  "", //>
+  "", //?
+  "", //@
+  "*-", //a
+  "-***", //b
+  "-*-*",//c
+  "-**",//d
+  "*",//e
+  "**-*",//f
+  "--*",//g
+  "****",//h
+  "**",//i
+  "*---",//j
+  "-*-",//k
+  "*-**",//l
+  "--",//m
+  "-*",//n
+  "---",//o
+  "*--*",//p
+  "--*-",
+  "*-*",
+  "***",
+  "-",
+  "**-",
+  "***-",
+  "*--",
+  "-**-",
+  "-*--",
+  "--**"
+};
+
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(2,OUTPUT);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    String data = Serial.readStringUntil('\n');
+    string2morse(data);
+  }
+}
+
+void string2morse(String input){
+  for(int i = 0;i<input.length();i++){
+    if(input[i] == ' '){
+      delay(UTIME*7);   
+      continue;
+    }
+    //test[i]
+    //morsecode[input[i]-'0']
+    String code = morsecode[input[i]-'0'];
+    int noteDuration =0;
+    for(int j = 0;j< code.length();j++){
+      
+      if(code[j] == '*'){
+        //점이다
+        noteDuration = UTIME;
+      }else if(code[j] == '-'){
+        //선이다
+        noteDuration = UTIME * 3;
+      }
+      
+        //부저전용코드
+        tone(3, NOTE_C4, noteDuration);  
+        delay(noteDuration+UTIME);
+        noTone(3);
+      /*
+       //LED 전용코드
+        digitalWrite(2,HIGH);
+        delay(noteDuration);
+        digitalWrite(2,LOW);
+        delay(UTIME);
+       */
+    }
+    //한캐릭가 끝나는 지점
+    delay(UTIME*3);
+    //Serial.println();
+    
+  }
+}

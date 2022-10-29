@@ -1,0 +1,132 @@
+/*
+ * C#예제54-1(송신기코드)(예제51-1를 참조하는 코드)
+ * 버튼(택트스위치)은 D2에 연결해서
+ * INPUT_PULLUP으로 사용하면 끝!
+ * 
+ */
+
+#define UTIME 200
+#define codelength 43
+//점* 선-
+String morsecode[]=
+{
+  "-----",//0
+  "*----",//1
+  "**---",//2
+  "***--",//3
+  "****-",//4
+  "*****",//5
+  "-****",//6
+  "--***",//7
+  "---**",//8
+  "----*",//9
+  "", //:
+  "", //;
+  "", //<
+  "", //=
+  "", //>
+  "", //?
+  "", //@
+  "*-", //a
+  "-***", //b
+  "-*-*",//c
+  "-**",//d
+  "*",//e
+  "**-*",//f
+  "--*",//g
+  "****",//h
+  "**",//i
+  "*---",//j
+  "-*-",//k
+  "*-**",//l
+  "--",//m
+  "-*",//n
+  "---",//o
+  "*--*",//p
+  "--*-",
+  "*-*",
+  "***",
+  "-",
+  "**-",
+  "***-",
+  "*--",
+  "-**-",
+  "-*--",
+  "--**"
+};
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(2,INPUT_PULLUP); //버튼
+}
+String code = "";
+byte button = 0;
+byte pre_button = 0;
+unsigned long button_time = 0;
+unsigned long unbutton_time = 0;
+bool rest_state3 = false;
+bool rest_state7 = false;
+void loop() {
+  // put your main code here, to run repeatedly:
+  button = digitalRead(2);
+  if(pre_button == HIGH && button == LOW){
+    //폴링엣지 버튼이 눌려진 그 순간
+    button_time = millis();
+  }
+  if(pre_button == LOW && button == HIGH){
+    //라이징엣지 버튼이 떨어지는 그 순간
+    unbutton_time = millis();
+    rest_state3 = true;
+    rest_state7 = true;
+    //Serial.print("스톱워치 시작 ");
+    //Serial.println(unbutton_time);
+    button_time = millis() - button_time;
+    //sos ...---...
+    //여기가 버튼을 땐부분이다 여기서 뭔가 하자
+    if(button_time > UTIME*8){
+      //UTIME의 7배가 단어간 간격인데 여유있게 8배로
+      
+    }else if(button_time > UTIME*2){
+      //이걸 선이라고 가정하자
+      code += "-";
+      //Serial.println("-");
+    }else{
+      //이걸 점이라고 가정하자
+      code += "*";
+      //Serial.println("*");
+    }
+  }
+  
+  if(pre_button == HIGH && button == HIGH){
+    if(rest_state7){
+      unsigned long time2 = millis()-unbutton_time;
+      if(time2 > UTIME*7){
+        Serial.write(' ');
+        rest_state7 = false;
+      }
+    }
+    if(rest_state3){
+      unsigned long time2 = millis()-unbutton_time;
+      
+      if(time2 > UTIME*3){
+        //Serial.print("결과 ");
+        //Serial.println(code);
+        //검색작업
+        for(int i = 0;i<codelength;i++){
+          if(morsecode[i] == code){
+            Serial.write((char)(i+'0'));
+          }
+        }
+        rest_state3 = false;
+        code = "";
+      }
+      //if(unbutton_time > UTIME*3){
+      //  Serial.print("unbutton_time ");
+      //  Serial.println(unbutton_time);
+      //  rest_state = false;
+      //}
+    }
+  }
+  pre_button = button;
+}

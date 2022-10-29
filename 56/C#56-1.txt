@@ -1,0 +1,24 @@
+/*
+ * C#예제56-1 터치센서2개의 터치신호를 윈폼으로 보내보자!
+ */
+
+#define player1 2
+#define player2 3
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  pinMode(player1,INPUT);
+  pinMode(player2,INPUT);
+}
+void loop() {
+  // put your main code here, to run repeatedly:
+  
+  //if(digitalRead(player1) == HIGH)
+  //if(digitalRead(player2) == HIGH)
+  
+  //0000??00 0x??
+  //00001100 0x0C
+  Serial.write(PIND&0x0C);
+  delay(10);
+}

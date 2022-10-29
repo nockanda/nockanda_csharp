@@ -1,0 +1,61 @@
+/*
+ * C#예제31 충격센서(D2)의 충격여부와 
+ * 누적충격횟수를 윈폼으로 보낸다.
+ * 그리고 누적충격횟수는 0.91인치 OLED에 표시해보자
+ */
+ #include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128 
+#define SCREEN_HEIGHT 32 
+
+#define OLED_RESET 4
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+int count = 0;
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;); // Don't proceed, loop forever
+  }
+  print_oled(count);
+  pinMode(2,INPUT);//충격센서값 읽기
+}
+bool pre_state = LOW;
+byte send_data[3];
+byte recv_data;
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    recv_data = Serial.read();
+    if(recv_data == 1){
+      count=0;
+      print_oled(count);
+    }
+  }
+  bool now_state = digitalRead(2);
+  if(pre_state == LOW && now_state == HIGH){
+    //충격이 없다가 갑자기 발생하는 부분
+    //rising edge
+    count++;
+    send_data[0] = 1;
+    send_data[1] = count/256;
+    send_data[2] = count%256;
+    Serial.write(send_data,3);
+    print_oled(count);
+  }
+  pre_state = now_state;
+  delay(100);
+}
+
+void print_oled(int value){
+  display.clearDisplay();
+    display.setTextSize(3); // Draw 2X-scale text
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(60, 0);
+    display.println(value);
+    display.display();
+}

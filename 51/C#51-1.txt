@@ -1,0 +1,68 @@
+/*
+ * C#예제51-1 IR리모컨을 이용해서 C#윈폼의 컨트롤들을
+ * 쓸모있게 제어해보자!
+ */
+/*
+    FF30CF 1
+    FF18E7 2
+    FF7A85 3
+    FF10EF 4
+    FF38C7 5
+    FF5AA5 6
+    FF42BD 7
+    FF4AB5 8
+    FF52AD 9
+    FF6897 0
+    FF9867 100+
+    FFB04F 200+
+    FFE01F -
+    FFA857 +
+    FF906F EQ
+    FF22DD |◀◀
+    FF02FD ▶▶|
+    FFC23D ▶||
+    FFA25D CH-
+    FF629D CH
+    FFE21D CH+
+    */
+
+#include <IRremote.h>
+
+int RECV_PIN = 11;
+
+IRrecv irrecv(RECV_PIN);
+
+decode_results results;
+
+void setup()
+{
+  Serial.begin(9600);
+  // In case the interrupt driver crashes on setup, give a clue
+  // to the user what's going on.
+  //Serial.println("Enabling IRin");
+  irrecv.enableIRIn(); // Start the receiver
+  //Serial.println("Enabled IRin");
+}
+
+byte senddata[3];
+void loop() {
+  if (irrecv.decode(&results)) {
+    //녹칸다가 가진리모컨은 3바이트로 ID가 입력이되는데
+    //오류가 나면 3바이트보다 작거나 큰값이 입력이 된다.
+    //그러므로 3바이트값만 취하면 나름대로 필터링이 된다고 보고 만든 코드이다.
+    if(results.value <= 0xFFFFFF && results.value > 0xFFFFF){
+      //실질적으로 윈폼으로 데이터를 보내야 할 블락
+      //Serial.println(results.value, HEX);
+      //Serial.println(results.value >> 16, HEX);
+      //Serial.println((results.value&0x00FF00) >> 8, HEX);
+      //Serial.println(results.value&0x0000FF, HEX);
+      senddata[0] =results.value >> 16;
+      senddata[1] =(results.value&0x00FF00) >> 8;
+      senddata[2] =results.value&0x0000FF;
+
+      Serial.write(senddata,3);
+    }
+    irrecv.resume(); // Receive the next value
+  }
+  delay(100);
+}

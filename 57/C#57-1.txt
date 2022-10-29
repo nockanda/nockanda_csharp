@@ -1,0 +1,136 @@
+/*
+ * C#57-1 예제로 활용되었음!
+ * 예제 54-3 시리얼통신으로 로또번호를 중복없이 뽑아보자
+ * (어떻게든 비복원추출로 한번 해보자)
+ * 배열로 한번 접근해보자
+ * FND디스플레이 3개를 연결해서 숫자를 나오게하고
+ * 1번 FND디스플레이 = CLK:D2, DIO:D3
+ * 2번 FND디스플레이 = CLK:D4, DIO:D5
+ * 3번 FND디스플레이 = CLK:D6, DIO:D7
+ * 버튼을 누르면 로또번호를 다시 나오게 해보자
+ * 버튼은 D8
+ * 7 30 16 15 36 32
+ * 38 26 39 22 5 44
+ * 21 35 13 36 22 1
+ * 29 25 23 8 14 33
+ * 39 24 27 28 3 35
+ */
+#include <Arduino.h>
+#include <TM1637Display.h>
+#define CLK1 2
+#define DIO1 3
+#define CLK2 4
+#define DIO2 5
+#define CLK3 6
+#define DIO3 7
+TM1637Display display1(CLK1, DIO1);
+TM1637Display display2(CLK2, DIO2);
+TM1637Display display3(CLK3, DIO3);
+ 
+long randNumber;
+int lotto[6] = {0};
+int num[45] = {0};
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  randomSeed(analogRead(0));
+  display1.setBrightness(0x0f);
+  display2.setBrightness(0x0f);
+  display3.setBrightness(0x0f);
+  pinMode(8,INPUT_PULLUP);
+  
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //윈폼에서 뭔가 신호를 준다면~
+    byte data = Serial.read();
+    byte senddata[6];
+    runlotto();
+    for(int i = 0;i<6;i++){
+      senddata[i] = (byte)lotto[i];
+    }
+    Serial.write(senddata,6);
+  }
+  
+  if(digitalRead(8) == LOW){
+    //버튼이 눌려진경우
+    runlotto();
+  }
+
+  display1.showNumberDec(lotto[0], false, 2, 0);
+  display1.showNumberDec(lotto[1], false, 2, 2);
+  display2.showNumberDec(lotto[2], false, 2, 0);
+  display2.showNumberDec(lotto[3], false, 2, 2);
+  display3.showNumberDec(lotto[4], false, 2, 0);
+  display3.showNumberDec(lotto[5], false, 2, 2);
+}
+
+void runlotto(){
+  for(int i = 0;i<45;i++){
+    num[i] = i+1;
+    //1부터 45까지(숫자)
+    //0부터 44까지(배열방번호)
+  }
+  //randNumber = random(하한,상한);하한~(상한-1)
+  for(int i = 0;i<6;i++){
+    randNumber = random(0,45-i); //0~44
+   
+    //배열 숫자 옮기기 작업
+    lotto[i] = num[randNumber];
+    //Serial.println(lotto[i]);
+    if(randNumber == 44-i){
+      //제일 끝인경우
+      //아무것도 안함..
+      /*
+      Serial.print(randNumber);
+      Serial.print(" 와 ");
+      Serial.print(44-i);
+      Serial.println("는 같으므로 제일 마지막요소이다.");
+      for(int j = 0;j<45;j++){
+        Serial.print(num[j]);
+        Serial.print(",");
+      }
+     Serial.println("---------------");
+     */
+    }else{
+      /*
+      Serial.print(randNumber);
+      Serial.print(" 와 ");
+      Serial.print(44-i);
+      Serial.println("는 다르므로 스왑을 진행한다.");
+      Serial.print(num[randNumber]);
+      Serial.print(" 는 ");
+      Serial.print(num[44-i]);
+      Serial.println("값으로 바뀐다");
+      for(int j = 0;j<45;j++){
+        Serial.print(num[j]);
+        Serial.print(",");
+      }
+      Serial.println("---------------");
+      */
+      num[randNumber] = num[44-i];
+      /*
+      for(int j = 0;j<45;j++){
+        Serial.print(num[j]);
+        Serial.print(",");
+      }
+      Serial.println("---------------");
+      */
+    }
+    //만약에 뽑은 숫자가 제일 마지막거면 어찌되나?
+    //randNumber =43
+    //num[43] = num[44-0]
+ 
+    //0 1 2 3 5 9 6 7 8 9 //배열방번호
+    //1 2 3 4 5 6 7 8 9 10  // length=10
+    //--------------2 loop
+    //0 1 2 3 4 5  6 7 8 9 //배열방번호
+    //1 2 3 4 5 10 7 8 9  // length=9
+    //--------------3 loop
+    //0 1 2 3 4 5 6 7 8 9 //배열방번호
+    //1 2 3 4 5 9 7 8   // length=8
+    
+  }
+}

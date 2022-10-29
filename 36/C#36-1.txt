@@ -1,0 +1,51 @@
+/*
+ * C#예제36-1 초음파센서 기본코드 생성
+ * 초음파센서의 trig핀은 D2에 연결 echo핀은 D3에 연결
+ * 서보모터는 D5에연결함
+ */
+#include <Servo.h>
+Servo myservo;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  pinMode(2,OUTPUT);//trig
+  pinMode(3,INPUT);//echo
+  myservo.attach(5); 
+  myservo.write(0); 
+}
+//delayMicroseconds()
+double duration=0;
+byte senddata[3];
+int degree = 0;
+bool direct = 0;
+void loop() {
+  // put your main code here, to run repeatedly:
+  digitalWrite(2,LOW);
+  delayMicroseconds(2);
+  digitalWrite(2,HIGH);
+  delayMicroseconds(10);
+  digitalWrite(2,LOW);
+  duration = (pulseIn(3, HIGH)/29.0)/2;
+
+  if(duration == 0) return;
+  //Serial.println(duration);
+  //19.19 1919
+  senddata[0] = (int)(duration*100) /256;
+  senddata[1] = (int)(duration*100) %256;
+  senddata[2] = degree;
+  Serial.write(senddata,3);
+  //각도회전
+   if(direct == 0){
+    //0->180
+    myservo.write(degree); 
+    degree++;
+    if(degree >= 180) direct=1;
+  }else{
+    //180->0
+    myservo.write(degree);
+    degree--;
+    if(degree <= 0) direct=0;
+  } 
+  delay(10);
+}

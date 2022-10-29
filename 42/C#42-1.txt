@@ -1,0 +1,38 @@
+/*
+ * C# 42-1 디지털2에 연결된 릴레이를 제어해서
+ * USB선풍기를 켰다가 껏다가 한번 해보자!
+ * 윈폼에서 1이 날라오면 켜기
+ * 0이 날라오면 끄기!
+ */
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(2,OUTPUT);//릴레이
+}
+unsigned long pretime = 0;
+bool timerset = false;
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(Serial.available() > 0){
+    //윈폼에서 뭔가 날라오는 값이 있다면~
+    byte recv = Serial.read();
+    if(recv == 0){
+      //끄기
+      digitalWrite(2,LOW);
+      timerset = false;
+    }else if(recv == 1){
+      //켜기
+      digitalWrite(2,HIGH);
+      timerset = true;
+      pretime = millis();
+    }
+  }
+  if(timerset){
+    unsigned long nowtime = millis();
+    if(nowtime - pretime > 5000){
+      digitalWrite(2,LOW);
+      timerset = false;
+    }
+  }
+}

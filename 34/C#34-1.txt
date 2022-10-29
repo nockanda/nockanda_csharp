@@ -1,0 +1,62 @@
+/*
+ * C#예제34-1 포토인터럽트를 D2에 연결해서
+ * 감지된 횟수를 시리얼로 출력해보자!
+ * 감지된 횟수를 FND디스플레이에 표시해보자!
+ * FND디스플레이는 TM1637이라는 모듈이고
+ * CLK를 D3에 DIO를 D4에 연결했다.
+ * RPM을 계산하는것으로 마무리해보자!
+ * 윈폼에서 모터의 파워를 조절가능하도록해보자!
+ * 모터파워는 모스펫으로 조절하자!
+ * 모스펫은 D5에 연결하자!
+ */
+#include <Arduino.h>
+#include <TM1637Display.h>
+#define CLK 3
+#define DIO 4
+ TM1637Display display(CLK, DIO);
+ 
+const byte interruptPin = 2;
+volatile int count = 0;
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(interruptPin,INPUT);
+  attachInterrupt(digitalPinToInterrupt(interruptPin), blink, FALLING);
+  display.setBrightness(0x0f);
+  analogWrite(5,255); //일단 모스펫 작동(=모터작동)
+}
+
+byte senddata[2];
+byte recv;
+int motor_power=255;
+void loop() {
+  // put your main code here, to run repeatedly:
+  //Serial.println(count/2);
+  if(Serial.available() > 0){
+     //받는부분 구현
+     recv = Serial.read();
+     if(recv == 0){
+      //RPM내리기
+      motor_power-=32;
+     }else{
+      //RPM올리기
+      motor_power+=32;
+     }
+     motor_power = constrain(motor_power,0,255);
+     analogWrite(5,motor_power);
+  }
+  int data = (count/2)*600;
+  senddata[0] = data/256;
+  senddata[1] = data%256;
+  display.showNumberDec(data, false);
+  Serial.write(senddata,2);
+  //count ... 0.1초에 
+  //count*10  1초당
+  //count*10*60 분당
+  count = 0;
+  delay(100);
+}
+
+void blink() {
+  count++;
+}
