@@ -1,0 +1,25 @@
+[C#윈폼116] (OPENAPI)기상청 지역별 실시간 날씨 동네예보 RSS정보 C#윈폼에 출력해보기!(#9)(녹칸다/포로리야공대가자)
+
+(OPENAPI)기상청 지역별 실시간 날씨 동네예보 RSS정보 C#윈폼에 출력해보기!(#9)(녹칸다/포로리야공대가자)
+-녹칸다의 openapi C# 프로젝트이다!(녹칸다/포로리야공대가자)
+-기상청에서 실시간으로 제공하는 RSS 서비스이다!
+-C#윈폼 어플리케이션을 웹클라이언트로 동작하도록하고 server에 get방식으로 request해서 결과를 response받은 다음 데이터를 파싱해보자!
+-일단 rss결과로 받은 문서를 C#의 xml파서로 파싱할 수 있는지 봐야할 것 같다!
+-그리고 데이터영역을 확보한다음 C#윈폼에 가장 적합한 컨트롤을 이용해서 출력해보자!
+-c#의 xml parser를 이용해서 dataset이 포함된 parent -node를 xml node로 지정한다음 child node를 불러내서 활용하면 될듯하다~!
+-아두이노에서 진행하는 OPENAPI는 늘 메모리 이슈가 있었는데 C#윈폼은 메모리가 매우 널널하므로 그러한 걱정은 할 필요가 없다!
+-크게 웹클라이언트로 동작하게 하는 부분, 받아온 결과를 xml로 처리하는부분, 데이터를 시각화하는 부분 3개로 분할해서 순차적으로 진행해본다!
+
+ 
+
+C#프로젝트
+
+example116.zip
+0.10MB
+ 
+
+(샘플query) http://www.kma.go.kr/wid/queryDFSRSS.jsp?zone=1159068000
+
+ 
+
+(기상청rss) https://www.weather.go.kr/weather/lifenindustry/sevice_rss.jsp

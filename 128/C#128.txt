@@ -1,0 +1,50 @@
+
+#define pump 3
+#define flow 2
+#define min_level 4
+#define max_level 5
+
+unsigned long t = 0;
+volatile float water = 0;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); //PC-아두이노간 통신라인
+  pinMode(pump,OUTPUT);
+  pinMode(flow,INPUT);
+  pinMode(min_level,INPUT);
+  pinMode(max_level,INPUT);
+  digitalWrite(pump,LOW);
+  attachInterrupt(digitalPinToInterrupt(flow), flow_calc, FALLING);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  //아두이노에게 0을 보내주면 워터펌프가 멈추고
+  //1을보내주면 워터펌프가 작동된다!
+  if(Serial.available()){
+    char c = Serial.read();
+    if(c == '0'){
+      digitalWrite(pump,LOW);
+    }else if(c == '1'){
+      digitalWrite(pump,HIGH);
+    }
+  }
+
+  //1초에 한번 워터펌프의 상태를 출력한다!
+  unsigned long t2 = millis();
+  if(t2-t > 1000){
+    t = t2;
+
+    bool pump_state = digitalRead(pump);
+    bool min_state = digitalRead(min_level);
+    bool max_state = digitalRead(max_level);
+    Serial.println(String(pump_state)+","+String(water)+","+String(min_state)+","+String(max_state));
+
+    water = 0; //ml/s
+  }
+}
+
+void flow_calc() {
+  water += (1/5888.0)*1000; //mL
+}

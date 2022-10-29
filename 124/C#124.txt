@@ -1,0 +1,27 @@
+#include <Adafruit_Fingerprint.h>
+
+
+SoftwareSerial mySerial(2, 3); //FPM10A TX(2), RX(3)
+
+Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial);
+
+void setup()  
+{
+  Serial.begin(9600); //PC-아두이노간
+  finger.begin(57600); //아두이노-지문모듈
+}
+
+void loop()                     // run over and over again
+{
+  uint8_t p = finger.getImage();
+  if (p != FINGERPRINT_OK)  return;
+
+  p = finger.image2Tz();
+  if (p != FINGERPRINT_OK)  return;
+
+  p = finger.fingerFastSearch();
+  if (p != FINGERPRINT_OK)  return;
+  
+  // found a match!
+  Serial.println(finger.fingerID);
+}

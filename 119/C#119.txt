@@ -1,0 +1,16 @@
+/*
+  C#119 가변저항과 광센서(CDS)값을 C#쪽으로 전송하는 초간단코드!
+ */
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  int data = analogRead(A0); //0~1023
+  Serial.println(data);
+  delay(100);
+}

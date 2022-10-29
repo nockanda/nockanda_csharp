@@ -1,0 +1,80 @@
+/*
+ C#예제 127-1-1(1번 아두이노용 코드)
+ */
+
+#include <SoftwareSerial.h>
+#include "DHT.h"
+#include <MHZ19.h>
+#define master 0x99 //153
+#define slave1 0x00 //0
+#define slave2 0x01 //1
+#define slave3 0x02 //1
+#define modepin 13
+#define readmode LOW
+#define sendmode HIGH
+#define DHTPIN 4 
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+SoftwareSerial rs485(2, 3); // RX, TX
+MHZ19 mhz(&Serial);
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); //PC-아두이노간 TTL통신
+  rs485.begin(9600); //아두이노-rs485간 TTL통신
+  pinMode(modepin,OUTPUT); //송수신제어핀
+  digitalWrite(modepin,readmode); //수신모드
+
+  dht.begin();
+}
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(rs485.available()){
+    //485모듈로 들어오는 값이 존재한다면
+    byte recv[10];
+    rs485.readBytes(recv,10);
+    if(recv[0] != slave1) return; //쌩~
+    
+    for(int i =0;i<10;i++){
+      Serial.print(recv[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+
+
+    float h = dht.readHumidity(); //2바이트
+    float t = dht.readTemperature(); //2바이트
+    //?이산화탄소센서(0~5000) //2바이트
+    int co2=0;
+    MHZ19_RESULT response = mhz.retrieveData();
+    if (response == MHZ19_RESULT_OK)
+    {
+      co2 = mhz.getCO2();
+    }
+
+    
+    byte data[10];
+    data[0] = recv[0];
+    data[1] = recv[1];
+    //응답데이터
+    h = h*100;
+    t = (t+50)*100;
+    data[2] = (int)h/256;
+    data[3] = (int)h%256;
+    data[4] = (int)t/256;
+    data[5] = (int)t%256;
+    data[6] = co2/256;
+    data[7] = co2%256;
+    for(int i =8;i<10;i++){
+      data[i] = 0x00;
+    }
+    for(int i =0;i<10;i++){
+      Serial.print(data[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+    digitalWrite(modepin,sendmode);
+    rs485.write(data,10);
+    digitalWrite(modepin,readmode);
+  }
+}

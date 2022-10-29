@@ -1,0 +1,105 @@
+/*
+ C#예제 129
+ 마스터에서 해당ID로 워터펌프 제어 명령을 할 수 있다!
+ 마스터에서 해당ID로 워터펌프와 플로우센서의 현재 상태를 요청할 수 있다!
+ */
+
+#include <SoftwareSerial.h>
+#define master 0x99 //153
+#define slave1 0x00 //0
+#define slave2 0x01 //1
+#define slave3 0x02 //1
+#define modepin 13
+#define readmode LOW
+#define sendmode HIGH
+#define pump 5
+#define flow 2
+SoftwareSerial rs485(3, 4); // RX, TX
+
+volatile float water = 0;
+float water2 = 0;
+unsigned long t = 0;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); //PC-아두이노간 TTL통신
+  rs485.begin(9600); //아두이노-rs485간 TTL통신
+  pinMode(modepin,OUTPUT); //송수신제어핀
+  pinMode(pump,OUTPUT);
+  pinMode(flow,INPUT);
+  digitalWrite(modepin,readmode); //수신모드
+  attachInterrupt(digitalPinToInterrupt(flow), flow_calc, FALLING);
+}
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(rs485.available()){
+    //485모듈로 들어오는 값이 존재한다면
+    byte recv[10];
+    //0번째 바이트 : 슬레이브 ID
+    //1번째 바이트 : 커맨드 ID
+    //커맨드 ID가 0이면 워터펌프 제어
+    //커맨드 ID가 1이면 플로우센서 결과 반환
+    rs485.readBytes(recv,10);
+    if(recv[0] != slave1) return; //쌩~
+
+
+    byte data[10]; //송신데이터
+    data[0] = recv[0];
+    data[1] = recv[1];
+    
+    //커맨드ID
+    if(recv[1] == 0){
+      //워터펌프 제어
+      //recv[N] N : 2~7 데이터
+      if(recv[2] == 0){
+        //워터펌프 OFF
+        digitalWrite(pump,LOW);
+      }else if(recv[2] == 1){
+        //워터펌프 ON
+        digitalWrite(pump,HIGH);
+      }
+      data[2] = 'O';
+      data[3] = 'K';
+      for(int i =4;i<10;i++){
+        data[i] = 0x00;
+      }
+    }else if(recv[1] == 1){
+      //플로우센서 결과 반환
+      //water2 결과 2바이트로 반환
+      //water2*100
+      data[2] = digitalRead(pump);
+      data[3] = (int)(water2*100)/256;
+      data[4] = (int)(water2*100)%256;
+      for(int i =5;i<10;i++){
+        data[i] = 0x00;
+      }
+    }
+    
+    
+    
+    
+    for(int i =0;i<10;i++){
+      Serial.print(data[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println(); 
+    digitalWrite(modepin,sendmode);
+    rs485.write(data,10);
+    digitalWrite(modepin,readmode);
+  }
+
+  //아두이노가 항상 하는일
+  //0.1초에 한번 워터펌프의 상태를 출력한다!
+  unsigned long t2 = millis();
+  if(t2-t > 100){
+    t = t2;
+
+    water2 = water*10;     //ml/0.1s
+    
+    water = 0; //ml/s
+  }
+}
+
+void flow_calc() {
+  water += (1/5888.0)*1000; //mL
+}

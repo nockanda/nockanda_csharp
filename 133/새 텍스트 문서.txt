@@ -1,0 +1,24 @@
+[C#À©Æû133] µñ¼Å³Ê¸®(Dictionary)¸¦ ÀÌ¿ëÇÑ ¿öµåÄ«¿îÆ®¿Í ¹®¼­ÀÏÄ¡µµ °è»ê¹æ¹ý! ½ÇÁ¦ ´º½º±â»çµéÀÇ ¹®¼­ ÀÏÄ¡µµ¸¦ °è»êÇØº¸ÀÚ!(³ìÄ­´Ù/Æ÷·Î¸®¾ß°ø´ë°¡ÀÚ)
+
+µñ¼Å³Ê¸®(Dictionary)¸¦ ÀÌ¿ëÇÑ ¿öµåÄ«¿îÆ®¿Í ¹®¼­ÀÏÄ¡µµ °è»ê¹æ¹ý! ½ÇÁ¦ ´º½º±â»çµéÀÇ ¹®¼­ ÀÏÄ¡µµ¸¦ °è»êÇØº¸ÀÚ!
+-ÀÌ¹øÆíÀÇ ÃÖÁ¾ ¸ñÇ¥´Â 2°³ÀÇ ¹®¼­°¡ ¾ó¸¸Å­ À¯»çÇÑÁö¸¦ ´ëÇ¥ÇÏ´Â ¼ýÀÚ·Î Ç¥ÇöÇØº¸´Â °ÍÀÌ´Ù!
+-¹®¼­ÀÇ ÀÏÄ¡µµ¸¦ °è»êÇÏ´Â °¡Àå °£´ÜÇÑ ¹æ¹ýÀ» ÀÌ¿ëÇØ¼­ ÇÑ¹ø ÇØº¸ÀÚ!(¹æ¹ýÀº ³ìÄ­´Ù¿¡°Ô µé¾îº¸ÀÚ)
+-ÀÏ´Ü ÇÏ³ªÀÇ ¹®¼­¾È¿¡ Á¸ÀçÇÏ´Â ´Ü¾î(word)¸¦ ÃßÃâÇØ¼­ ¸î°³ÀÇ ´Ü¾î°¡ ÀÖ´ÂÁö¸¦ °è»êÇØ¾ß ÇÑ´Ù!(¿öµå Ä«¿îÆ®)
+-¾Ö±¹°¡¸¦ ¿¹·Î µéÀÚ¸é µ¿ÇØ¹°°ú´Â 1È¸ µîÀåÇÏ°í ¹«±ÃÈ­´Â ÈÄ·Å¸¶´Ù ÀÖÀ¸¹Ç·Î 4È¸ µîÀåÇÒ °ÍÀÌ´Ù! ÀÌ°ÍÀ» °è»êÇÏ´Â °ÍÀÌ´Ù!
+-¿öµå Ä«¿îÆ®¸¦ ±¸ÇöÇÒ¶§ °¡Àå ÀûÀýÇÑ ÀÚ·á±¸Á¶´Â µñ¼Å³Ê¸®(dictionary)ÀÌ´Ù!
+-µñ¼Å³Ê¸®ÀÇ key¿¡ ´Ü¾î¸¦ Áý¾î³Ö°í value¸¦ intÇüÀ¸·Î ¼±¾ðÇØ¼­ ÇØ´ç ´Ü¾îÀÇ µîÀå È½¼ö·Î ÁöÁ¤ÇÑ´Ù!
+-¹®¼­ÀÇ ÀÖ´Â ´Ü¾î¸¦ µñ¼Å³Ê¸®ÀÇ key·Î ÁöÁ¤ÇÏ°í Áßº¹µÇ´Â°Ô ÀÖÀ¸¸é °¹¼ö¸¦ ÇÏ³ª¾¿ ¿Ã¸°´Ù!
+-2°³ÀÇ ¹®¼­¸¦ °¢°¢ µñ¼Å³Ê¸®·Î ¿öµåÄ«¿îÆ® ÇÑ´Ù!
+-ÃÖÁ¾ÀûÀ¸·Î °£´ÜÇÑ? °è»ê½ÄÀ» ÀÌ¿ëÇØ¼­ ¹®¼­ÀÇ ÀÏÄ¡µµ¸¦ °è»êÇÑ´Ù!
+-´çÀÏ³¯ ½Ç½Ã°£ ´º½º±â»ç ¸î°³¸¦ °¡Á®¿Í¼­ ¹®¼­ ÀÏÄ¡µµÀÇ ÀûÀý¼ºÀ» Æò°¡ÇØº¸ÀÚ!
+
+C#¿¡¼­ Æ¯¼ö¹®ÀÚ Á¦°Å
+Regex.Replace(text2, @"[^a-zA-Z0-9°¡-ÆR]", " ", RegexOptions.Singleline);
+
+ 
+
+C#ÇÁ·ÎÁ§Æ®
+
+example133.zip
+0.19MB
+

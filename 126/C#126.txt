@@ -1,0 +1,37 @@
+#include "DHT.h"
+#include <SoftwareSerial.h>
+#include <MHZ19.h>
+
+#define DHTPIN 2 
+#define DHTTYPE DHT11
+
+DHT dht(DHTPIN, DHTTYPE);
+SoftwareSerial ss(3,4);
+MHZ19 mhz(&ss);
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600); //PC-아두이노간
+  dht.begin();
+  ss.begin(9600);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  int soil_humi = analogRead(A0);
+  int cds = analogRead(A1);
+
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+
+  int co2 = 0;
+
+  MHZ19_RESULT response = mhz.retrieveData();
+  if (response == MHZ19_RESULT_OK)
+  {
+    co2 = mhz.getCO2();
+  }
+  
+  Serial.println(String(soil_humi)+","+String(cds)+","+String(h)+","+String(t)+","+String(co2));
+  delay(1000);
+}
